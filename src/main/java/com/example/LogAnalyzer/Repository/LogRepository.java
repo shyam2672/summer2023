@@ -1,6 +1,6 @@
-package com.example.LogAnalyzer.Configuration.Repository;
+package com.example.LogAnalyzer.Repository;
 
-import com.example.LogAnalyzer.Configuration.Entity.LogEntity;
+import com.example.LogAnalyzer.Entity.LogEntity;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 

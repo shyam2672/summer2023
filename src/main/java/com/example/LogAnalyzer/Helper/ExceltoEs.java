@@ -1,13 +1,9 @@
-package com.example.LogAnalyzer.Configuration.Helper;
+package com.example.LogAnalyzer.Helper;
 
-import com.example.LogAnalyzer.Configuration.Entity.LogEntity;
-import com.example.LogAnalyzer.Configuration.Repository.LogRepository;
+import com.example.LogAnalyzer.Entity.LogEntity;
+import com.example.LogAnalyzer.Repository.LogRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
@@ -98,10 +94,8 @@ public class ExceltoEs {
             }
 
             workbook.close();
-//            System.out.println(logs);
 
 
-//            WriteToEs(logs);
             return logs;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -110,50 +104,18 @@ public class ExceltoEs {
     }
 
     public  void WriteToEs(List<LogEntity> logs){
-            for(LogEntity loge: logs){
-                System.out.println(loge.getID());
-
-                System.out.println(loge.getTimestamp());
-                System.out.println(loge.getSource());
-
-                System.out.println(loge.getMessage());
-            }
+//            for(LogEntity loge: logs){
+//                System.out.println(loge.getID());
+//
+//                System.out.println(loge.getTimestamp());
+//                System.out.println(loge.getSource());
+//
+//                System.out.println(loge.getMessage());
+//            }
 
 
            logRepository.saveAll(logs);
-//for( LogEntity logg:logs){
-//            LogEntity fogg=new LogEntity();
-//        fogg.setMessage("hi");
-//    logRepository.save(fogg);
-////    logRepository.save(logg);
-//
-//}
 
-//
-//List<LogEntity> l=new ArrayList<LogEntity>();
-//
-//LogEntity l1=new LogEntity();
-//        LogEntity l2=new LogEntity();
-//
-//        LogEntity l3=new LogEntity();
-//        l1.setID(1);
-//
-//l1.setSource("1");
-//        l2.setID(2);
-//
-//        l2.setSource("2");
-//        l3.setID(3);
-//        l3.setSource("3");
-////        System.out.println("ffff");
-//        logRepository.save(l1);
-//        logRepository.save(l2);
-//        logRepository.save(l3);
 
-//         List<LogEntity> fog= (List<LogEntity>) logRepository.findAll();
-//        LogEntity logg=new LogEntity();
-//        logg.setMessage("hi");
-//
-//        logRepository.save(logg);
-//        System.out.println(fog);
     }
 }

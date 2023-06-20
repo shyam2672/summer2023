@@ -1,4 +1,4 @@
-package com.example.LogAnalyzer.Configuration.Entity;
+package com.example.LogAnalyzer.Entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;

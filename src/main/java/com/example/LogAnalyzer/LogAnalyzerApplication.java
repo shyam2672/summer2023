@@ -1,31 +1,10 @@
 package com.example.LogAnalyzer;
 
-import com.example.LogAnalyzer.Configuration.Config;
-import com.example.LogAnalyzer.Configuration.Entity.LogEntity;
-import com.example.LogAnalyzer.Configuration.Helper.ExceltoEs;
-import com.example.LogAnalyzer.Configuration.Repository.LogRepository;
-import org.apache.http.HttpHost;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.Aggregations;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.LogAnalyzer.Helper.ExceltoEs;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Import;
-
-import java.io.IOException;
-import java.util.List;
 
 //import static com.example.LogAnalyzer.Configuration.Helper.ExceltoEs.ReadFromExcel;
 
