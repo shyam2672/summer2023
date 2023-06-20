@@ -29,6 +29,13 @@ public boolean validate(String s){
     return extension.equalsIgnoreCase("xlsx") || extension.equalsIgnoreCase("xls");
 }
 
+public boolean isvalid(Row row){
+    //logic to be discussed
+
+    
+    return true;
+}
+
     public  List<LogEntity> ReadFromExcel(){
 
        if(!validate(file)){
@@ -45,6 +52,9 @@ public boolean validate(String s){
             int rowNumber = 0;
             while (rows.hasNext()) {
                 Row currentRow = rows.next();
+                if(!isvalid(currentRow)){
+                    throw new RuntimeException("Invalid data");
+                }
 
                 // skip header
                 if (rowNumber == 0) {
