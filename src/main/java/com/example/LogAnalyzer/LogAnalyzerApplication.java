@@ -1,10 +1,13 @@
 package com.example.LogAnalyzer;
 
+import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Helper.ExceltoEs;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+
+import java.util.List;
 
 //import static com.example.LogAnalyzer.Configuration.Helper.ExceltoEs.ReadFromExcel;
 
@@ -24,8 +27,11 @@ public class LogAnalyzerApplication {
 
   ExceltoEs obj=context.getBean(ExceltoEs.class);
 
-  obj.WriteToEs(obj.ReadFromExcel());
+ List<LogEntity> f= obj.WriteToEs(obj.ReadFromExcel());
 
+ for(LogEntity ff:f){
+	 System.out.println(ff.getMessage());
+ }
 
 
 
