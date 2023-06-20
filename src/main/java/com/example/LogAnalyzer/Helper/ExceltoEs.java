@@ -23,8 +23,6 @@ public class ExceltoEs {
 
     public static String file="/Users/shyamprajapati/Downloads/LogAnalyzer/src/main/resources/static/logsdata.xlsx";
     private static final String[] EXCEL_EXTENSIONS = { ".xlsx", ".xls" };
-    @Autowired
-    private  LogRepository logRepository;
 
 public boolean validate(String s){
     String extension = FilenameUtils.getExtension(s);
@@ -115,7 +113,7 @@ public boolean validate(String s){
 
     }
 
-    public List<LogEntity>  WriteToEs(List<LogEntity> logs){
+    public List<LogEntity>  WriteToEs(LogRepository logRepository, List<LogEntity> logs){
 //            for(LogEntity loge: logs){
 //                System.out.println(loge.getID());
 //
@@ -124,7 +122,6 @@ public boolean validate(String s){
 //
 //                System.out.println(loge.getMessage());
 //            }
-
 try{
    return (List<LogEntity>) logRepository.saveAll(logs);
 }

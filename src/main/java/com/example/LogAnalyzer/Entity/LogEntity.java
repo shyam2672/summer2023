@@ -8,7 +8,7 @@ public class LogEntity {
 
     @Id
 //    @Field(type= FieldType.Keyword)
-    private int id;
+    private long id;
 
     private String timestamp;
 
@@ -16,7 +16,7 @@ public class LogEntity {
 
 //    @Field(type = FieldType.Text)
     private String message;
-    public int getID() {
+    public long getID() {
         return id;
     }
 
