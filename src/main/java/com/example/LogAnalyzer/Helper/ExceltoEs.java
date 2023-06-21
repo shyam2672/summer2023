@@ -32,7 +32,7 @@ public boolean validate(String s){
 public boolean isvalid(Row row){
     //logic to be discussed
 
-    
+
     return true;
 }
 

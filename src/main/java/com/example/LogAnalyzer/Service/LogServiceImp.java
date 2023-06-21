@@ -12,7 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
-public class LogServiceImp implements LogService{
+public class LogServiceImp {
 
 
     private final LogRepository logRepository;
@@ -24,19 +24,12 @@ public class LogServiceImp implements LogService{
         this.logRepository=logRepository;
     }
 
-    @Override
     public List<LogEntity> savelogdata() {
-           return helper.WriteToEs(logRepository,helper.ReadFromExcel());
+      return helper.WriteToEs(logRepository,helper.ReadFromExcel());
     }
 
-    @Override
     public List<LogEntity> search() {
-//        Page<LogEntity> documentsPage = logRepository.findAll(PageRequest.of(0, Integer.MAX_VALUE));
-//        List<LogEntity> documents = documentsPage.getContent();
-//
-//        for (LogEntity document : documents) {
-//            System.out.println(document.getSource());
-//        }
+
 
         Iterable<LogEntity> logs = logRepository.findAll();
         List<LogEntity> loggs=new ArrayList<>();
@@ -47,13 +40,7 @@ public class LogServiceImp implements LogService{
 
 
 
-//        Collections.sort(loggs, new Comparator<LogEntity>() {
-//
-//            public int compare(LogEntity o1, LogEntity o2) {
-//                // compare two instance of `Score` and return `int` as result.
-//                return Long.compare(o1.getID(), o2.getID());
-//            }
-//        });
+
 
 
         return loggs;
