@@ -31,7 +31,26 @@ public boolean validate(String s){
 
 public boolean isvalid(Row row){
     //logic to be discussed
-
+//
+//    Required field validation - Check that required fields have some value. This ensures no rows have missing data.
+//
+//            Data type validation - Validate that fields have the expected data type, like string, integer, float, boolean, etc. This catches type mismatches.
+//
+//    Range validation - Ensure numeric values fall within an acceptable range. This catches out-of-range values.
+//
+//            List validation - Validate fields against a finite list of acceptable values. For example, a "status" field may only allow "open", "in progress" and "closed".
+//
+//            Regular expression validation - Use a regex to validate string fields match a certain pattern. For example, validate an email field matches an email regex.
+//
+//            Unique field validation - Check that values in unique identifier fields are actually unique. This ensures no duplicate records.
+//
+//            Format validation - Validate that date/time fields match a specified format. You can parse the values and catch invalid formats.
+//
+//    Length validation - Ensure string fields are within a minimum and maximum length. This catches strings that are too long or short.
+//
+//            Checksum validation - Calculate a checksum for the entire row and ensure it matches a provided checksum value. This detects corrupted data.
+//
+//    Cross-field validation - Compare values across multiple fields to detect inconsistencies. For example, an "end date" can't be before a "start date".
 
     return true;
 }

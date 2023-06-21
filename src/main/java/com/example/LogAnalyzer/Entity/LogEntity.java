@@ -7,6 +7,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 public class LogEntity {
 
     @Id
+
 //    @Field(type= FieldType.Keyword)
     private long id;
 
