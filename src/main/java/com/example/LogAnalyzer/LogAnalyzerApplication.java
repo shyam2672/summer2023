@@ -2,6 +2,7 @@ package com.example.LogAnalyzer;
 
 import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Repository.LogRepository;
+import com.example.LogAnalyzer.Service.LogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,14 +28,14 @@ public class LogAnalyzerApplication {
 //		ReadFromExcel();
 //		ReadFromExcel();ReadFromExcel
 
-//  LogService obj=context.getBean(LogService.class);
-//
-// List<LogEntity> f= obj.savelogdata();
-//
+  LogService obj=context.getBean(LogService.class);
+
+ List<LogEntity> f= obj.savelogdata();
+
 // for(LogEntity ff:f){
 //	 System.out.println(ff.getMessage());
 // }
-//
+
 //
 // obj.search();
 

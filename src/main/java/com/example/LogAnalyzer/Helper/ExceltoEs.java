@@ -4,13 +4,10 @@ import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Repository.LogRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -88,7 +85,7 @@ public boolean isvalid(Row row){
 
                 int cellIdx = 0;
 //                int intf=0;
-                logdata.setID(rowNumber);
+//                logdata.setID(rowNumber);
 
                 while (cellsInRow.hasNext()) {
 
@@ -99,9 +96,10 @@ public boolean isvalid(Row row){
                         case 0:
 //                            System.out.println(currentCell.getStringCellValue());
                             Date timestamp = currentCell.getDateCellValue();
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                            String formattedTimestamp = dateFormat.format(timestamp);
-                            logdata.setTimestamp(formattedTimestamp);
+                            System.out.println(timestamp);
+//                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//                            Date formattedTimestamp = dateFormat.format(timestamp);
+                            logdata.setTimestamp(timestamp);
                             break;
 
                         case 1:
@@ -143,14 +141,10 @@ public boolean isvalid(Row row){
     }
 
     public List<LogEntity>  WriteToEs(LogRepository logRepository, List<LogEntity> logs){
-//            for(LogEntity loge: logs){
-//                System.out.println(loge.getID());
-//
-//                System.out.println(loge.getTimestamp());
-//                System.out.println(loge.getSource());
-//
-//                System.out.println(loge.getMessage());
-//            }
+            for(LogEntity loge: logs){
+                String id=UUID.randomUUID().toString();
+                loge.setID(id);
+            }
 try{
    return (List<LogEntity>) logRepository.saveAll(logs);
 }
