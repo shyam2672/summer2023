@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 //import static com.example.LogAnalyzer.Configuration.Helper.ExceltoEs.ReadFromExcel;
@@ -30,7 +31,15 @@ public class LogAnalyzerApplication {
 
   LogService obj=context.getBean(LogService.class);
 
- List<LogEntity> f= obj.savelogdata();
+// List<LogEntity> f= obj.savelogdata();
+
+		String start = "2023-06-16T11:22:14";
+		String end = "2023-06-17T11:22:14";
+
+//		obj.savelogdata();
+
+		 obj.filterByterms();
+
 
 // for(LogEntity ff:f){
 //	 System.out.println(ff.getMessage());

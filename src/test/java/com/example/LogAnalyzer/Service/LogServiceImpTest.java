@@ -14,7 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,16 +46,23 @@ class LogServiceImpTest {
     @Test
     public void saveTest(){
 
-        List<LogEntity> logs=new ArrayList<>();
-        LogEntity log1=new LogEntity();
-        log1.setID(1);
-        log1.setTimestamp("timestamp");
+        List<LogEntity> logs = new ArrayList<>();
+        LogEntity log1 = new LogEntity();
+        log1.setID(String.valueOf(1));
+        Date date;
+        try {
+            date = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+                    .parse("16/06/2023 11:22:15");
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        log1.setTimestamp(date);
         log1.setSource("source");
         log1.setMessage("message");
-        LogEntity log2=new LogEntity();
+        LogEntity log2 = new LogEntity();
 
-        log2.setID(2);
-        log2.setTimestamp("timestamp");
+        log2.setID(String.valueOf(2));
+        log2.setTimestamp(date);
         log2.setSource("source");
         log2.setMessage("message");
 
@@ -67,7 +77,7 @@ class LogServiceImpTest {
     }
 
     @Test
-    public void searchTest(){
+    public void searchTest() {
 //        List<LogEntity> f1,f2;
 //        f1=logService.savelogdata();
 //        f2=logService.search();
@@ -80,16 +90,23 @@ class LogServiceImpTest {
 //
 //         }
 
-        List<LogEntity> logs=new ArrayList<>();
-        LogEntity log1=new LogEntity();
-        log1.setID(1);
-        log1.setTimestamp("timestamp");
+        List<LogEntity> logs = new ArrayList<>();
+        LogEntity log1 = new LogEntity();
+        log1.setID(String.valueOf(1));
+        Date date;
+        try {
+            date = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+                    .parse("16/06/2023 11:22:15");
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        log1.setTimestamp(date);
         log1.setSource("source");
         log1.setMessage("message");
-        LogEntity log2=new LogEntity();
+        LogEntity log2 = new LogEntity();
 
-        log2.setID(2);
-        log2.setTimestamp("timestamp");
+        log2.setID(String.valueOf(2));
+        log2.setTimestamp(date);
         log2.setSource("source");
         log2.setMessage("message");
 
@@ -97,7 +114,7 @@ class LogServiceImpTest {
         logs.add(log2);
         when(logRepository.findAll()).thenReturn(logs);
         List<LogEntity> actualLogs = logService.search();
-        assertEquals(logs,actualLogs);
+        assertEquals(logs, actualLogs);
     }
 
 }
