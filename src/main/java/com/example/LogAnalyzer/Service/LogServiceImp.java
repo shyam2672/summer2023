@@ -30,6 +30,7 @@ public class LogServiceImp implements LogService {
     @Override
     public List<LogEntity> search() {
 
+        int fffff=0;
 
         Iterable<LogEntity> logs = logRepository.findAll();
         List<LogEntity> loggs=new ArrayList<>();
@@ -39,6 +40,7 @@ public class LogServiceImp implements LogService {
         }
         return loggs;
 //
+//feg
 
 
 //        return f;
