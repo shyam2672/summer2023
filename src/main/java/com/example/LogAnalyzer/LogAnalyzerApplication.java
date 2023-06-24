@@ -34,11 +34,11 @@ public class LogAnalyzerApplication {
 // List<LogEntity> f= obj.savelogdata();
 
 		String start = "2023-06-16T11:22:14";
-		String end = "2023-06-17T11:22:14";
+		String end = "2024-06-16T11:22:14";
 
 //		obj.savelogdata();
 
-		 obj.filterByterms();
+		 obj.filterBytime(LocalDateTime.parse(start),LocalDateTime.parse(end));
 
 
 // for(LogEntity ff:f){

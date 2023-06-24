@@ -4,6 +4,7 @@ import com.example.LogAnalyzer.Entity.LogEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public interface LogService {
 
@@ -11,7 +12,7 @@ public interface LogService {
 
     List<LogEntity> search();
 
-    List<LogEntity> groupBysource();
+    Map<String, Long> groupBysource();
 
 
     List<LogEntity> projectBySourceAndMessage();

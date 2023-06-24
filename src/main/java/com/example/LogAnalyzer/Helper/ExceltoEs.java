@@ -4,12 +4,11 @@ import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Repository.LogRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -52,7 +51,7 @@ public LogEntity isvalid(Row row){
 //                            System.out.println(currentCell.getStringCellValue());Da
 
                 if(DateUtil.isCellDateFormatted(currentCell)){
-                    Date timestamp = currentCell.getDateCellValue();
+                    LocalDateTime timestamp = currentCell.getLocalDateTimeCellValue();
                     System.out.println(timestamp);
 //                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 //                            Date formattedTimestamp = dateFormat.format(timestamp);
