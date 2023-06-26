@@ -38,9 +38,10 @@ public class LogAnalyzerApplication {
 
 //		obj.savelogdata();
 
-		 obj.filterBytime(LocalDateTime.parse(start),LocalDateTime.parse(end));
+//		 obj.filterBytime(LocalDateTime.parse(start),LocalDateTime.parse(end));
 
 
+		System.out.println(obj.searchUsingScroll().size());
 // for(LogEntity ff:f){
 //	 System.out.println(ff.getMessage());
 // }

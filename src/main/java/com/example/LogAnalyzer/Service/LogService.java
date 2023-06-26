@@ -21,4 +21,10 @@ public interface LogService {
 
     List<LogEntity> filterByterms();
 
+    List<LogEntity> searchUsingPage();
+
+    List<LogEntity> searchUsingScroll();
+
+
+
 }

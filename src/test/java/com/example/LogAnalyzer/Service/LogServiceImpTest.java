@@ -119,7 +119,6 @@ class LogServiceImpTest {
 
         Map<String, Long> result = logService.groupBysource();
 //
-//        // Assert the result
         try {
             verify(client).search((SearchRequest) any(), any());
         } catch (IOException e) {
@@ -135,30 +134,22 @@ class LogServiceImpTest {
 
     @Test
     public void ProjecttionTest(){
-// Mock the search response
         SearchResponse searchResponse = mock(SearchResponse.class);
 
-        // Mock the search hits
         SearchHits searchHits = mock(SearchHits.class);
 
-        // Mock the search hit
         SearchHit searchHit = mock(SearchHit.class);
 
-        // Mock the source as map
         Map<String, Object> sourceAsMap = new HashMap<>();
         sourceAsMap.put("source", "source1");
         sourceAsMap.put("message", "message1");
 
-        // Return hits when getting from response
         when(searchResponse.getHits()).thenReturn(searchHits);
 
-        // Return hit when iterating hits
         when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
 
-        // Return source as map when getting from hit
         when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
 
-        // Return mock response when searching
         try {
             when(client.search(any(), any())).thenReturn(searchResponse);
         } catch (IOException e) {
@@ -167,7 +158,6 @@ class LogServiceImpTest {
 
         List<LogEntity> logs = logService.projectBySourceAndMessage();
 
-        // Assert result
         assertEquals(1, logs.size());
         assertEquals("source1", logs.get(0).getSource());
         assertEquals("message1", logs.get(0).getMessage());
@@ -177,13 +167,10 @@ class LogServiceImpTest {
 
     @Test
     public void filterByTimeTest(){
-        // Mock the search response
         SearchResponse searchResponse = mock(SearchResponse.class);
 
-        // Mock the search hits
         SearchHits searchHits = mock(SearchHits.class);
 
-        // Mock the search hit
         SearchHit searchHit = mock(SearchHit.class);
 
         String start = "2023-06-16T11:22:14";
@@ -194,18 +181,13 @@ class LogServiceImpTest {
         sourceAsMap.put("source","source1");
         sourceAsMap.put("message","message1");
 
-        // ... other fields
 
-        // Stub search response
         when(searchResponse.getHits()).thenReturn(searchHits);
 
-        // Stub search hits
         when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
 
-        // Stub search hit
         when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
 
-        // Stub client.search()
         try {
             when(client.search(any(), any())).thenReturn(searchResponse);
         } catch (IOException e) {
@@ -216,7 +198,6 @@ class LogServiceImpTest {
 
         List<LogEntity> logs = logService.filterBytime(LocalDateTime.parse(start), LocalDateTime.parse(end));
 
-        // Assertions
         assertEquals(1, logs.size());
         assertEquals("1", logs.get(0).getID());
     }
@@ -225,13 +206,10 @@ class LogServiceImpTest {
     @Test
     public void filterByTermsTest()
     {
-        // Mock the search response
         SearchResponse searchResponse = mock(SearchResponse.class);
 
-        // Mock the search hits
         SearchHits searchHits = mock(SearchHits.class);
 
-        // Mock the search hit
         SearchHit searchHit = mock(SearchHit.class);
 
         Map<String, Object> sourceAsMap = new HashMap<>();
@@ -240,18 +218,13 @@ class LogServiceImpTest {
         sourceAsMap.put("source", "source1");
         sourceAsMap.put("message", "message1");
 
-        // ...
 
-        // Stub search response
         when(searchResponse.getHits()).thenReturn(searchHits);
 
-        // Stub search hits
         when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
 
-        // Stub search hit
         when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
 
-        // Stub client.search()
         try {
             when(client.search(any(), any())).thenReturn(searchResponse);
         } catch (IOException e) {
@@ -259,8 +232,6 @@ class LogServiceImpTest {
         }
 
         List<LogEntity> logs = logService.filterByterms();
-
-        // Assert results
         assertEquals("source1", logs.get(0).getSource());
     }
 

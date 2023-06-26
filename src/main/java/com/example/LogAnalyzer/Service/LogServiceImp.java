@@ -1,16 +1,20 @@
 package com.example.LogAnalyzer.Service;
 
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Helper.ExceltoEs;
 import com.example.LogAnalyzer.Repository.LogRepository;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.index.query.TermsQueryBuilder;
+import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
@@ -19,6 +23,8 @@ import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.xml.crypto.Data;
@@ -62,6 +68,80 @@ public class LogServiceImp implements LogService {
         }
         return loggs;
     }
+
+
+
+    @Override
+    public List<LogEntity> searchUsingPage() {
+        Page<LogEntity> page = logRepository.findAll(Pageable.ofSize(1000));
+        List<LogEntity> logs=new ArrayList<>();
+        while(page.hasNext()){
+            logs.addAll(page.getContent());
+            page=logRepository.findAll(page.nextPageable());
+        }
+        logs.addAll(page.getContent());
+
+        for(LogEntity logg:logs){
+            System.out.println(logg.getID());
+        }
+        System.out.println(logs.size());
+        return logs;
+
+    }
+
+    @Override
+    public List<LogEntity> searchUsingScroll() {
+        Scroll scroll=new Scroll(TimeValue.timeValueMinutes(1L));
+
+        SearchRequest searchRequest=new SearchRequest();
+        searchRequest.indices("loganalyzer");
+        searchRequest.scroll(scroll);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchSourceBuilder.size(100);
+        searchRequest.source(searchSourceBuilder);
+
+        String scrollId = null;
+        SearchResponse searchResponse = null;
+        try {
+            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        scrollId = searchResponse.getScrollId();
+        List<LogEntity> logs=new ArrayList<>();
+        int tothits=0;
+
+        while (scrollId != null) {
+
+            SearchHits hits= searchResponse.getHits();
+            if(hits.getHits().length==0)break;
+            for(SearchHit hit: hits){
+                Map<String,Object> sourceAsMap=hit.getSourceAsMap();
+//f++;
+                tothits++;
+                String source= (String) sourceAsMap.get("source");
+                String message= (String) sourceAsMap.get("message");
+                LogEntity logg=new LogEntity();
+                logg.setID(String.valueOf(tothits));
+                logg.setSource(source);
+                logg.setMessage(message);
+                System.out.println(source+ "----" + message);
+                logs.add(logg);
+            }
+
+
+            try {
+                searchResponse = client.scroll(new SearchScrollRequest(scrollId).scroll(scroll), RequestOptions.DEFAULT);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            scrollId = searchResponse.getScrollId();
+        }
+        return logs;
+    }
+
+
 
     @Override
     public Map<String, Long> groupBysource() {
@@ -129,21 +209,21 @@ public class LogServiceImp implements LogService {
          SearchHits hits= response.getHits();
 
          List<LogEntity> logs=new ArrayList<>();
-         int f=0;
+         int tothits=0;
          for(SearchHit hit: hits){
              Map<String,Object> sourceAsMap=hit.getSourceAsMap();
-f++;
+//f++;
+             tothits++;
              String source= (String) sourceAsMap.get("source");
              String message= (String) sourceAsMap.get("message");
              LogEntity logg=new LogEntity();
-             logg.setID(String.valueOf(f));
+             logg.setID(String.valueOf(tothits));
              logg.setSource(source);
              logg.setMessage(message);
              System.out.println(source+ "----" + message);
 logs.add(logg);
          }
 
-///gfgeg
         return logs;
     }
 
@@ -171,7 +251,7 @@ logs.add(logg);
 
         SearchHits hits = response.getHits();
 
-        int f=0;
+//        int f=0;
 
         List<LogEntity> logs=new ArrayList<>();
 
@@ -188,9 +268,9 @@ logs.add(logg);
             logg.setMessage(message);
             logs.add(logg);
             System.out.println(source+ "----" + message);
-f++;
+//f++;
         }
-        System.out.println(f);
+//        System.out.println(f);
         return logs;
     }
 
@@ -219,7 +299,7 @@ f++;
 
         SearchHits hits = response.getHits();
 
-        int f=0;
+//        int f=0;
         List<LogEntity> logs=new ArrayList<>();
 
         for(SearchHit hit: hits){
@@ -235,9 +315,9 @@ f++;
             logg.setMessage(message);
             logs.add(logg);
             System.out.println(source+ "----" + message);
-            f++;
+//            f++;
         }
-        System.out.println(f);
+//        System.out.println(f);
 
         return logs;
     }
