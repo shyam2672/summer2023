@@ -3,6 +3,7 @@ package com.example.LogAnalyzer.Service;
 import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Helper.ExceltoEs;
 import com.example.LogAnalyzer.Repository.LogRepository;
+import org.apache.xmlbeans.impl.xb.xsdschema.ListDocument;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -15,7 +16,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -235,6 +240,87 @@ class LogServiceImpTest {
         assertEquals("source1", logs.get(0).getSource());
     }
 
+//    @Test
+//    public void searchUsingPageTest(){
+//        // Mock first page with 5 entities
+//
+//PageImpl<LogEntity> page1= new PageImpl<>(List.of(   new LogEntity(),
+//        new LogEntity(),
+//        new LogEntity(),
+//        new LogEntity(),
+//        new LogEntity()));
+//
+//
+//        PageImpl<LogEntity> page2= new PageImpl<>(List.of(   new LogEntity(),
+//                new LogEntity(),
+//                new LogEntity(),
+//                new LogEntity(),
+//                new LogEntity()));
+//
+//
+//        Page<LogEntity> firstPage =mock(Page.class);
+//        Page<LogEntity> secondPage =mock(Page.class);
+//
+//
+//        // Mock second page with 3 entities
+//
+//
+//
+//        Mockito.when(logRepository.findAll(any(Pageable.class)))
+//                .thenReturn(firstPage);
+//
+//        when(firstPage.getContent()).thenReturn(page1.getContent());
+//        when(secondPage.getPageable()).thenReturn(secondPage.getPageable());
+//        when(firstPage.nextPageable()).thenReturn(secondPage.getPageable());
+//
+//        Mockito.when(logRepository.findAll(secondPage.getPageable()))
+//                .thenReturn(secondPage);
+//        when(secondPage.getContent()).thenReturn(page2.getContent());
+//
+//
+//
+//
+//        // Call the method under test
+//        List<LogEntity> logs = logService.searchUsingPage();
+//
+//        // Assert that 8 entities were returned
+//        assertEquals(8, logs.size());
+//
+//
+//    }
+
+    @Test
+    public void testSearchUsingPage() {
+        Page<LogEntity> page1 = createLogEntityPage(1, 1000, true);
+        Page<LogEntity> page2 = createLogEntityPage(1001, 2000, false);
+
+        when(logRepository.findAll(any(Pageable.class))).thenReturn(page1, page2);
+
+        List<LogEntity> expectedLogs = new ArrayList<>();
+        expectedLogs.addAll(page1.getContent());
+        expectedLogs.addAll(page2.getContent());
+
+        List<LogEntity> actualLogs = logService.searchUsingPage();
+
+        assertEquals(expectedLogs.size(), actualLogs.size());
+        assertEquals(expectedLogs, actualLogs);
+    }
+
+    private Page<LogEntity> createLogEntityPage(int startIndex, int endIndex, boolean hasNext) {
+        List<LogEntity> logs = new ArrayList<>();
+        for (int i = startIndex; i <= endIndex; i++) {
+            LogEntity log = new LogEntity();
+            log.setID(String.valueOf(i));
+            logs.add(log);
+        }
+
+        Page<LogEntity> page = Mockito.mock(Page.class);
+        when(page.getContent()).thenReturn(logs);
+        when(page.hasNext()).thenReturn(hasNext);
+        when(page.nextPageable()).thenReturn(Pageable.unpaged());
+
+        return page;
+    }
 
 
 }

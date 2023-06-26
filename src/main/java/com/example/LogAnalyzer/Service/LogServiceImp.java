@@ -75,12 +75,14 @@ public class LogServiceImp implements LogService {
     public List<LogEntity> searchUsingPage() {
         Page<LogEntity> page = logRepository.findAll(Pageable.ofSize(1000));
         List<LogEntity> logs=new ArrayList<>();
+        System.out.println(page.hasNext());
         while(page.hasNext()){
             logs.addAll(page.getContent());
+            System.out.println(page.getContent().size());
             page=logRepository.findAll(page.nextPageable());
         }
         logs.addAll(page.getContent());
-
+       page.nextPageable();
         for(LogEntity logg:logs){
             System.out.println(logg.getID());
         }
