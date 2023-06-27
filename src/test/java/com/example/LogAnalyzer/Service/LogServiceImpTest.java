@@ -6,11 +6,17 @@ import com.example.LogAnalyzer.Repository.LogRepository;
 import org.apache.xmlbeans.impl.xb.xsdschema.ListDocument;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -321,6 +327,73 @@ class LogServiceImpTest {
 
         return page;
     }
+
+    @Test
+    public void searchUsingScrollTest(){
+        SearchResponse searchResponse1 = mock(SearchResponse.class);
+        SearchResponse searchResponse2 = mock(SearchResponse.class);
+        SearchHits searchHits1 = mock(SearchHits.class);
+        SearchHits searchHits2 = mock(SearchHits.class);
+        SearchHit searchHit1 = mock(SearchHit.class);
+        SearchHit searchHit2 = mock(SearchHit.class);
+        Map<String, Object> sourceAsMap1 = new HashMap<>();
+        Map<String, Object> sourceAsMap2 = new HashMap<>();
+        Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
+
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("loganalyzer");
+        searchRequest.scroll(scroll);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        searchSourceBuilder.size(100);
+        searchRequest.source(searchSourceBuilder);
+        try {
+            when(client.search(eq(searchRequest), eq(RequestOptions.DEFAULT))).thenReturn(searchResponse1);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        try {
+            when(client.scroll(any(SearchScrollRequest.class), eq(RequestOptions.DEFAULT))).thenReturn(searchResponse2);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        when(searchResponse1.getScrollId()).thenReturn("scrollId1");
+        when(searchResponse1.getHits()).thenReturn(searchHits1);
+        when(searchResponse2.getScrollId()).thenReturn("scrollId2");
+        when(searchResponse2.getHits()).thenReturn(searchHits2);
+        when(searchHits1.getHits()).thenReturn(new SearchHit[] { searchHit1 });
+        when(searchHits2.getHits()).thenReturn(new SearchHit[] { });
+
+        when(searchHits1.iterator()).thenReturn(List.of(searchHit1).iterator());
+
+        sourceAsMap1.put("source", "source1");
+        sourceAsMap1.put("message", "message1");
+        sourceAsMap2.put("source", "source2");
+        sourceAsMap2.put("message", "message2");
+        when(searchHit1.getSourceAsMap()).thenReturn(sourceAsMap1);
+
+        List<LogEntity> logs = logService.searchUsingScroll();
+
+        List<LogEntity> expectedLogs = new ArrayList<>();
+        LogEntity log1 = new LogEntity();
+        log1.setID("1");
+        log1.setSource("source1");
+        log1.setMessage("message1");
+        expectedLogs.add(log1);
+        assertEquals(expectedLogs.size(),logs.size());
+     for(int i=0;i<expectedLogs.size();i++){
+         LogEntity logg1=expectedLogs.get(i);
+         LogEntity logg2=logs.get(i);
+         assertEquals(logg1.getMessage(),logg2.getMessage());
+         assertEquals(logg1.getID(),logg2.getID());
+         assertEquals(logg1.getSource(),logg2.getSource());
+
+     }
+
+    }
+
+
 
 
 }

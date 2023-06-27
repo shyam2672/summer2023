@@ -117,6 +117,7 @@ public class LogServiceImp implements LogService {
         while (scrollId != null) {
 
             SearchHits hits= searchResponse.getHits();
+//              hits.iterator();
             if(hits.getHits().length==0)break;
             for(SearchHit hit: hits){
                 Map<String,Object> sourceAsMap=hit.getSourceAsMap();
