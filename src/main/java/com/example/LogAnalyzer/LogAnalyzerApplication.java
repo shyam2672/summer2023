@@ -40,8 +40,9 @@ public class LogAnalyzerApplication {
 
 //		 obj.filterBytime(LocalDateTime.parse(start),LocalDateTime.parse(end));
 
+		System.out.println(obj.cardinalityAggs("date"));
 
-		System.out.println(obj.searchUsingScroll().size());
+//		System.out.println(obj.searchUsingScroll().size());
 // for(LogEntity ff:f){
 //	 System.out.println(ff.getMessage());
 // }

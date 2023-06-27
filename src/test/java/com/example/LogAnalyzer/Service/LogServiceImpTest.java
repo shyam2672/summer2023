@@ -15,7 +15,11 @@ import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
+import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.metrics.Cardinality;
+import org.elasticsearch.search.aggregations.metrics.ParsedCardinality;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -217,6 +221,7 @@ class LogServiceImpTest {
     @Test
     public void filterByTermsTest()
     {
+
         SearchResponse searchResponse = mock(SearchResponse.class);
 
         SearchHits searchHits = mock(SearchHits.class);
@@ -392,6 +397,154 @@ class LogServiceImpTest {
      }
 
     }
+
+    @Test
+    public void tabularAggTest(){
+        SearchResponse searchResponse = mock(SearchResponse.class);
+        Aggregations aggs = mock(Aggregations.class);
+
+        Terms sourceaggs = mock(Terms.class);
+        when(searchResponse.getAggregations()).thenReturn(aggs);
+        Terms.Bucket bucket1 = mock(Terms.Bucket.class);
+        when(bucket1.getKeyAsString()).thenReturn("source1");
+        Terms.Bucket bucket2 = mock(Terms.Bucket.class);
+        when(bucket2.getKeyAsString()).thenReturn("source2");
+        List<Terms.Bucket> terms= new ArrayList<Terms.Bucket>();
+        terms.add(bucket1);
+        terms.add(bucket2);
+        List<Terms.Bucket> buckets = List.of(bucket1, bucket2);
+        Cardinality uniqueTimestamps = mock(Cardinality.class);
+        when( uniqueTimestamps.getValue()).thenReturn(100L);
+
+        doAnswer(invocation -> {
+            return buckets;
+        }).when(sourceaggs).getBuckets();
+
+        when(aggs.get("timestamps_per_source")).thenReturn(sourceaggs);
+        when(bucket1.getAggregations()).thenReturn(aggs);
+        when(bucket2.getAggregations()).thenReturn(aggs);
+        when(aggs.get("unique_timestamps")).thenReturn(uniqueTimestamps);
+//        when(bucket1.getAggregations().get("unique_timestamps")).thenReturn(uniqueTimestamps);
+//        when(bucket2.getAggregations().get("unique_timestamps")).thenReturn(uniqueTimestamps);
+
+        try {
+            when(client.search( any(), any())).thenReturn(searchResponse);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        Map<String, Long> result = logService.tabularAggregation();
+//
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        verify(searchResponse).getAggregations();
+        assertEquals(2, result.size());
+        assertEquals(Long.valueOf(100L), result.get("source1"));
+        assertEquals(Long.valueOf(100L), result.get("source2"));
+
+
+    }
+
+    @Test
+    public void nestedAggTest(){
+        SearchResponse searchResponse = mock(SearchResponse.class);
+        Aggregations aggs = mock(Aggregations.class);
+
+        Terms sourcesAgg = mock(Terms.class);
+        List<Terms.Bucket> sourcesBuckets = new ArrayList<>();
+
+        Terms.Bucket sourcesBucket1 = mock(Terms.Bucket.class);
+
+        when(sourcesBucket1.getKeyAsString()).thenReturn("source1");
+
+        Terms.Bucket sourcesBucket2 = mock(Terms.Bucket.class);
+        when(sourcesBucket2.getKeyAsString()).thenReturn("source2");
+        sourcesBuckets.add(sourcesBucket1);
+        sourcesBuckets.add(sourcesBucket2);
+
+
+        doAnswer(invocation -> {
+            return sourcesBuckets;
+        }).when(sourcesAgg).getBuckets();
+
+
+        Histogram timestampsAgg = mock(Histogram.class);
+        List<Histogram.Bucket> timestampBuckets = new ArrayList<>();
+
+        Histogram.Bucket timestampsBucket1 = mock(Histogram.Bucket.class);
+        when(timestampsBucket1.getKeyAsString()).thenReturn("2019-01-01");
+
+        Histogram.Bucket timestampsBucket2 = mock(Histogram.Bucket.class);
+        when(timestampsBucket2.getKeyAsString()).thenReturn("2019-01-02");
+
+        timestampBuckets.add(timestampsBucket1);
+        timestampBuckets.add(timestampsBucket2);
+
+
+        doAnswer(invocation -> {
+            return timestampBuckets;
+        }).when(timestampsAgg).getBuckets();
+
+        Cardinality uniqueIds = mock(Cardinality.class);
+        when(uniqueIds.getValue()).thenReturn(100L);
+
+        try {
+            when(client.search(any(), any())).thenReturn(searchResponse);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        when(searchResponse.getAggregations()).thenReturn(aggs);
+        when(aggs.get("sources")).thenReturn(sourcesAgg);
+
+        when(sourcesBucket1.getAggregations()).thenReturn(aggs);
+        when(sourcesBucket2.getAggregations()).thenReturn(aggs);
+
+        when(aggs.get("timestamps")).thenReturn(timestampsAgg);
+
+        when(timestampsBucket1.getAggregations()).thenReturn(aggs);
+        when(timestampsBucket2.getAggregations()).thenReturn(aggs);
+        when(aggs.get("unique_ids")).thenReturn(uniqueIds);
+
+
+        Map<String, Long> mp=logService.nestedAggregation();
+
+        assertEquals(mp.get("source1-2019-01-01"),100L);
+        assertEquals(mp.get("source2-2019-01-02"),100L);
+
+    }
+
+    @Test
+    public void cardinalityaggTest(){
+
+        // Mock search response
+        SearchResponse searchResponse = mock(SearchResponse.class);
+        Cardinality cardinalityAgg = mock(Cardinality.class);
+        Aggregations aggs = mock(Aggregations.class);
+
+        // Stub cardinality value
+        when(cardinalityAgg.getValue()).thenReturn(100L);
+when(searchResponse.getAggregations()).thenReturn(aggs);
+        when(aggs.get("unique_" + "field"))
+                .thenReturn(cardinalityAgg);
+        try {
+            when(client.search(any(), any())).thenReturn(searchResponse);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Call function under test
+        long cardinality = logService.cardinalityAggs("field");
+
+        // Assertions
+        assertEquals(100L, cardinality);
+    }
+
 
 
 

@@ -26,5 +26,9 @@ public interface LogService {
     List<LogEntity> searchUsingScroll();
 
 
+   Map<String, Long> tabularAggregation();
+    Map<String, Long> nestedAggregation();
+
+    Long cardinalityAggs(String field);
 
 }

@@ -5,10 +5,13 @@ import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 @Document(indexName = "loganalyzer")
-public class LogEntity {
+public class
+LogEntity {
 
     @Id
     @Field(type= FieldType.Keyword)
@@ -20,8 +23,20 @@ public class LogEntity {
     @Field(type= FieldType.Keyword)
     private String source;
 
-//    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Date)
+    private LocalDate date;
+
+    //    @Field(type = FieldType.Text)
     private String message;
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+
     public String getID() {
         return id;
     }

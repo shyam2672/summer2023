@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -20,12 +21,14 @@ public class ExceltoEs {
 
     public static String file="/Users/shyamprajapati/Downloads/LogAnalyzer/src/main/resources/static/logsdata.xlsx";
 
-public boolean validate(String s){
+public boolean
+validate(String s){
     String extension = FilenameUtils.getExtension(s);
     return extension.equalsIgnoreCase("xlsx") || extension.equalsIgnoreCase("xls");
 }
 
-public LogEntity isvalid(Row row){
+public LogEntity
+isvalid(Row row){
     //logic to be discussed
 
 
@@ -52,10 +55,12 @@ public LogEntity isvalid(Row row){
 
                 if(DateUtil.isCellDateFormatted(currentCell)){
                     LocalDateTime timestamp = currentCell.getLocalDateTimeCellValue();
+                    LocalDate date=timestamp.toLocalDate();
                     System.out.println(timestamp);
 //                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 //                            Date formattedTimestamp = dateFormat.format(timestamp);
                     logdata.setTimestamp(timestamp);
+                    logdata.setDate(date);
                 }
                 else{
                     throw new RuntimeException("invalid date time format");
@@ -95,7 +100,8 @@ public LogEntity isvalid(Row row){
     return logdata;
 }
 
-    public  List<LogEntity> ReadFromExcel(){
+    public  List<LogEntity>
+    ReadFromExcel(){
 
        if(!validate(file)){
            throw new RuntimeException("invalid file type");
@@ -139,11 +145,13 @@ public LogEntity isvalid(Row row){
 
     public List<LogEntity>  WriteToEs(LogRepository logRepository, List<LogEntity> logs){
             for(LogEntity loge: logs){
-                String id=UUID.randomUUID().toString();
-                loge.setID(id);
+//                String id=UUID.randomUUID().toString();
+//                loge.setID(id);
+                System.out.println(logRepository.save(loge).getDate());
             }
 try{
-   return (List<LogEntity>) logRepository.saveAll(logs);
+    return logs;
+//   return (List<LogEntity>) logRepository.saveAll(logs);
 }
 catch (Exception e){
     throw new RuntimeException(e);

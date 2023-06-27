@@ -1,8 +1,8 @@
 package com.example.LogAnalyzer.Service;
 
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Helper.ExceltoEs;
+import com.example.LogAnalyzer.Helper.QueryPrinter;
 import com.example.LogAnalyzer.Repository.LogRepository;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -20,14 +20,19 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.Cardinality;
+import org.elasticsearch.search.aggregations.metrics.CardinalityAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -48,13 +53,18 @@ public class LogServiceImp implements LogService {
         this.client=client;
     }
 
-    public LogServiceImp(RestHighLevelClient client){
-        this.client=client;
-    }
 
     @Override
     public List<LogEntity> savelogdata() {
-      return helper.WriteToEs(logRepository,helper.ReadFromExcel());
+        try{
+            List<LogEntity> logs;
+            logs= helper.WriteToEs(logRepository,helper.ReadFromExcel());
+            return logs;
+
+        }
+        catch (Exception e){
+throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -144,6 +154,105 @@ public class LogServiceImp implements LogService {
         return logs;
     }
 
+    @Override
+    public Map<String, Long> tabularAggregation() {
+        QueryBuilder query=QueryBuilders.matchAllQuery();
+        AggregationBuilder aggregation = AggregationBuilders
+                .terms("timestamps_per_source").field("source").subAggregation(AggregationBuilders.cardinality("unique_timestamps").field("timestamp"));
+
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("loganalyzer");
+        searchRequest.source(new SearchSourceBuilder().query(query).aggregation(aggregation));
+        SearchResponse searchResponse;
+        try {
+            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+            System.out.println(searchResponse==null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Aggregations aggs=searchResponse.getAggregations();
+        Terms sourceaggs=aggs.get("timestamps_per_source");
+
+        List<? extends Terms.Bucket> sourceBuckets=sourceaggs.getBuckets();
+        Map<String,Long> mp=new HashMap<>();
+        for(Terms.Bucket sourcebucket:sourceBuckets){
+            String source = sourcebucket.getKeyAsString();
+
+            Cardinality uniqueTimestamps = sourcebucket.getAggregations().get("unique_timestamps");
+            long value = uniqueTimestamps.getValue();
+            mp.put(source,value);
+            System.out.println("Source: " + source + ", Total Timestamps: " + value);
+        }
+        return mp;
+    }
+
+    @Override
+    public Map<String, Long> nestedAggregation() {
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("loganalyzer");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+        TermsAggregationBuilder sourcesAggregation = AggregationBuilders.terms("sources").field("source");
+        DateHistogramAggregationBuilder timestampsAggregation = AggregationBuilders.dateHistogram("timestamps").field("timestamp").calendarInterval(DateHistogramInterval.HOUR);
+        CardinalityAggregationBuilder uniqueIdsAggregation = AggregationBuilders.cardinality("unique_ids").field("id");
+        sourcesAggregation.subAggregation(timestampsAggregation.subAggregation(uniqueIdsAggregation));
+        searchSourceBuilder.aggregation(sourcesAggregation);
+        searchRequest.source(searchSourceBuilder);
+        SearchResponse searchResponse;
+        try {
+            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Aggregations aggs = searchResponse.getAggregations();
+
+        Terms sourcesAgg = aggs.get("sources");
+        Map<String,Long> mp=new HashMap<>();
+
+        for (Terms.Bucket sourcesBucket : sourcesAgg.getBuckets()) {
+            String source = sourcesBucket.getKeyAsString();
+
+            Histogram timestampsAgg = sourcesBucket.getAggregations().get("timestamps");
+
+
+
+            for (Histogram.Bucket timestampsBucket : timestampsAgg.getBuckets()) {
+                String timestamp = timestampsBucket.getKeyAsString();
+
+                Cardinality uniqueIds = timestampsBucket.getAggregations().get("unique_ids");
+                long value = uniqueIds.getValue();
+                System.out.println("Source: " + source + ", Timestamp: " + timestamp + ", Unique IDs: " + value);
+                mp.put(source+"-"+timestamp,value);
+            }
+        }
+        return mp;
+
+    }
+
+    @Override
+    public Long cardinalityAggs(String field) {
+        AggregationBuilder aggregationBuilder = AggregationBuilders
+                .cardinality("unique_" + field) //agg name
+                .field(field);
+
+        SearchRequest searchRequest = new SearchRequest("loganalyzer");
+        searchRequest.source(new SearchSourceBuilder()
+                .aggregation(aggregationBuilder));
+QueryPrinter.printQuery(searchRequest,client);
+        SearchResponse searchResponse = null;
+        try {
+            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Cardinality cardinalityAgg = searchResponse.getAggregations().get("unique_" + field);
+        long cardinality = cardinalityAgg.getValue();
+
+        System.out.println("Cardinality (number of distinct values) for field " + field + " is: " + cardinality);
+        return cardinality;
+    }
 
 
     @Override
@@ -180,8 +289,7 @@ public class LogServiceImp implements LogService {
             mp.put(sourceBucket.getKeyAsString(),sourceBucket.getDocCount());
         }
 //        System.out.println(aggs);
-
-        return mp;
+return mp;
     }
 
     @Override
@@ -324,6 +432,10 @@ logs.add(logg);
 
         return logs;
     }
+
+
+
+
 
 
 }
