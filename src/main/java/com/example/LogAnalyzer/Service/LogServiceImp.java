@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -50,6 +49,7 @@ public class LogServiceImp implements LogService {
 
     private ExceltoEs helper;
 
+    //dependency injection using construction
     @Autowired
     public LogServiceImp(ExceltoEs helper, LogRepository logRepository, RestHighLevelClient client) {
         this.helper = helper;
@@ -60,21 +60,19 @@ public class LogServiceImp implements LogService {
 
     @Override
     public List<LogEntity> savelogdata() {
-//        try {
-//            List<LogEntity> logs;
-//            logs =  helper.ReadFromExcel();
-//
-//
-//
-//            return logs;
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
+        try {
+            List<LogEntity> logs;
+            logs = helper.ReadFromExcel();
 
-        return helper.WriteToEs(logRepository,helper.ReadFromExcel());
+            return helper.WriteToEs(logRepository, logs);
+
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    //simple search using elasticsearchRepository
     @Override
     public List<LogEntity> search() {
 
@@ -88,7 +86,7 @@ public class LogServiceImp implements LogService {
         return loggs;
     }
 
-
+    //search using paging, good for small result set
     @Override
     public List<LogEntity> searchUsingPage() {
         Page<LogEntity> page = logRepository.findAll(Pageable.ofSize(1000));
@@ -96,19 +94,19 @@ public class LogServiceImp implements LogService {
         List<LogEntity> logs = new ArrayList<>();
         while (page.hasNext()) {
             logs.addAll(page.getContent());
-//            System.out.println(page.getContent().size());
             page = logRepository.findAll(page.nextPageable());
         }
         logs.addAll(page.getContent());
         page.nextPageable();
-//
         System.out.println(logs.size());
         return logs;
 
     }
 
+    //seach using scroll, good for large result sets
     @Override
     public List<LogEntity> searchUsingScroll() {
+        //data will remain in memory for 1 minute
         Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
 
         SearchRequest searchRequest = new SearchRequest();
@@ -116,9 +114,9 @@ public class LogServiceImp implements LogService {
         searchRequest.scroll(scroll);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+
         searchSourceBuilder.size(100);
         searchRequest.source(searchSourceBuilder);
-
         String scrollId = null;
         SearchResponse searchResponse = null;
         try {
@@ -133,20 +131,34 @@ public class LogServiceImp implements LogService {
         while (scrollId != null) {
 
             SearchHits hits = searchResponse.getHits();
-//              hits.iterator();
             if (hits.getHits().length == 0) break;
             for (SearchHit hit : hits) {
+                String id=hit.getId();
                 Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-//f++;
+//                System.out.println(sourceAsMap.toString());
                 tothits++;
+                LogEntity logg = new LogEntity();
+
+                String timestamp = sourceAsMap.get("timestamp").toString();
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                formatter.setLenient(false);
+                Date tsp;
+                try {
+                    tsp = formatter.parse(timestamp);
+                    logg.setTimestamp(tsp);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+                logg.setTimestamp(tsp);
+                LocalDate dt = LocalDate.parse(sourceAsMap.get("date").toString());
+                logg.setDate(dt);
                 String source = (String) sourceAsMap.get("source");
                 String message = (String) sourceAsMap.get("message");
-                LogEntity logg = new LogEntity();
-                logg.setID(String.valueOf(tothits));
                 logg.setSource(source);
+                logg.setID(id);
                 logg.setMessage(message);
-                System.out.println(source + "----" + message);
                 logs.add(logg);
+
             }
 
 
@@ -160,6 +172,7 @@ public class LogServiceImp implements LogService {
         return logs;
     }
 
+    //an example of tabular aggregation,count of timestamps under a source
     @Override
     public Map<String, Long> tabularAggregation() {
         QueryBuilder query = QueryBuilders.matchAllQuery();
@@ -169,6 +182,7 @@ public class LogServiceImp implements LogService {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("loganalyzer");
         searchRequest.source(new SearchSourceBuilder().query(query).aggregation(aggregation));
+        System.out.println(QueryPrinter.printQuery(searchRequest,client));
         SearchResponse searchResponse;
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -190,9 +204,10 @@ public class LogServiceImp implements LogService {
             mp.put(source, value);
             System.out.println("Source: " + source + ", Total Timestamps: " + value);
         }
+        System.out.println(mp.size());
         return mp;
     }
-
+    //an example of nested aggregation,count of doc under a timestamp under a source
     @Override
     public Map<String, Long> nestedAggregation() {
         SearchRequest searchRequest = new SearchRequest();
@@ -201,10 +216,11 @@ public class LogServiceImp implements LogService {
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         TermsAggregationBuilder sourcesAggregation = AggregationBuilders.terms("sources").field("source");
         DateHistogramAggregationBuilder timestampsAggregation = AggregationBuilders.dateHistogram("timestamps").field("timestamp").calendarInterval(DateHistogramInterval.HOUR);
-        CardinalityAggregationBuilder uniqueIdsAggregation = AggregationBuilders.cardinality("unique_ids").field("id");
+        CardinalityAggregationBuilder uniqueIdsAggregation = AggregationBuilders.cardinality("unique_dates").field("date");
         sourcesAggregation.subAggregation(timestampsAggregation.subAggregation(uniqueIdsAggregation));
         searchSourceBuilder.aggregation(sourcesAggregation);
         searchRequest.source(searchSourceBuilder);
+        System.out.println(QueryPrinter.printQuery(searchRequest,client));
         SearchResponse searchResponse;
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -225,9 +241,9 @@ public class LogServiceImp implements LogService {
             for (Histogram.Bucket timestampsBucket : timestampsAgg.getBuckets()) {
                 String timestamp = timestampsBucket.getKeyAsString();
 
-                Cardinality uniqueIds = timestampsBucket.getAggregations().get("unique_ids");
+                Cardinality uniqueIds = timestampsBucket.getAggregations().get("unique_dates");
                 long value = uniqueIds.getValue();
-                System.out.println("Source: " + source + ", Timestamp: " + timestamp + ", Unique IDs: " + value);
+                System.out.println("Source: " + source + ", Timestamp: " + timestamp + ", Unique Dates: " + value);
                 mp.put(source + "-" + timestamp, value);
             }
         }
@@ -235,6 +251,7 @@ public class LogServiceImp implements LogService {
 
     }
 
+    //can count cardinality of any field except messsage
     @Override
     public Long cardinalityAggs(String field) {
         AggregationBuilder aggregationBuilder = AggregationBuilders
@@ -259,7 +276,7 @@ public class LogServiceImp implements LogService {
         return cardinality;
     }
 
-
+    //ann example og grouby aggregation, tot docs under a source
     @Override
     public Map<String, Long> groupBysource() {
         System.out.println(client);
@@ -297,7 +314,7 @@ public class LogServiceImp implements LogService {
         return mp;
     }
 
-
+// an example of porjection query
     @Override
     public List<LogEntity> projectBySourceAndMessage() {
         QueryBuilder query = QueryBuilders.matchAllQuery();
@@ -305,7 +322,7 @@ public class LogServiceImp implements LogService {
         SearchSourceBuilder searchSource = new SearchSourceBuilder();
         searchSource.query(query);
         searchSource.from(0);
-        searchSource.size(1000);
+        searchSource.size(10000);
 
         String[] includes = {"source", "message"};
         String[] excludes = null;
@@ -344,10 +361,9 @@ public class LogServiceImp implements LogService {
         return logs;
     }
 
-
-
+//fitler docs in given time range
     @Override
-    public List<LogEntity> filterBytime(LocalDateTime start, LocalDateTime end) {
+    public List<LogEntity> filterBytime(String start, String end) {
         RangeQueryBuilder query = new RangeQueryBuilder("timestamp")
                 .gte(start)
                 .lte(end);
@@ -360,7 +376,7 @@ public class LogServiceImp implements LogService {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("loganalyzer");
         searchRequest.source(searchSource);
-
+        System.out.println(QueryPrinter.printQuery(searchRequest,client));
         SearchResponse response;
         try {
             response = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -370,7 +386,6 @@ public class LogServiceImp implements LogService {
 
         SearchHits hits = response.getHits();
 
-//        int f=0;
 
         List<LogEntity> logs = new ArrayList<>();
 
@@ -378,18 +393,18 @@ public class LogServiceImp implements LogService {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             String id = (String) sourceAsMap.get("ID");
             LogEntity logg = new LogEntity();
-            String timestamp=sourceAsMap.get("timestamp").toString();
+            String timestamp = sourceAsMap.get("timestamp").toString();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             formatter.setLenient(false);
             Date tsp;
-            try{
+            try {
                 tsp = formatter.parse(timestamp);
                 logg.setTimestamp(tsp);
-            }catch (Exception e){
+            } catch (Exception e) {
                 System.out.println(e);
             }
 
-            LocalDate dt= LocalDate.parse(sourceAsMap.get("date").toString());
+            LocalDate dt = LocalDate.parse(sourceAsMap.get("date").toString());
             String source = (String) sourceAsMap.get("source");
             String message = (String) sourceAsMap.get("message");
             logg.setID(id);
@@ -400,12 +415,12 @@ public class LogServiceImp implements LogService {
             logs.add(logg);
             System.out.println(timestamp);
             System.out.println(source + "----" + message);
-//
-//            f++;
         }
-//        System.out.println(f);
+        System.out.println(logs.size());
         return logs;
     }
+
+    //fiters docs whose soucre belong to some specific options
     @Override
     public List<LogEntity> filterByterms() {
         TermsQueryBuilder termsfilter = QueryBuilders.termsQuery("source", "standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7", "standalone-reporting-sch-slave-deployment-6d978d7d87-b9fvc");
@@ -421,36 +436,31 @@ public class LogServiceImp implements LogService {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("loganalyzer");
         searchRequest.source(searchSource);
-
         SearchResponse response;
         try {
             response = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         SearchHits hits = response.getHits();
-
-//        int f=0;
         List<LogEntity> logs = new ArrayList<>();
-
         for (SearchHit hit : hits) {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             System.out.println(sourceAsMap.toString());
             String id = (String) sourceAsMap.get("ID");
             LogEntity logg = new LogEntity();
-            String timestamp=sourceAsMap.get("timestamp").toString();
+            String timestamp = sourceAsMap.get("timestamp").toString();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             formatter.setLenient(false);
             Date tsp;
-            try{
+            try {
                 tsp = formatter.parse(timestamp);
                 logg.setTimestamp(tsp);
-            }catch (Exception e){
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
 
-            LocalDate dt= LocalDate.parse(sourceAsMap.get("date").toString());
+            LocalDate dt = LocalDate.parse(sourceAsMap.get("date").toString());
             String source = (String) sourceAsMap.get("source");
             String message = (String) sourceAsMap.get("message");
             logg.setID(id);
@@ -461,18 +471,15 @@ public class LogServiceImp implements LogService {
             logs.add(logg);
             System.out.println(timestamp);
             System.out.println(source + "----" + message);
-//
-//            f++;
         }
-//        System.out.println(f);
 
         return logs;
     }
-
+//generic filter function wth any fied and any number of terms
     @Override
     public List<LogEntity> filterByTermsDynamic(String field, String... terms) throws ParseException {
 
-        if(field!="id" && field!="timestamp" && field!="source" && field!="message"){
+        if (field != "id" && field != "timestamp" && field != "source" && field != "message") {
             throw new RuntimeException("invalid field name");
         }
         TermsQueryBuilder termsQuery = QueryBuilders.termsQuery(field, terms);
@@ -498,17 +505,17 @@ public class LogServiceImp implements LogService {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             String id = (String) sourceAsMap.get("ID");
             LogEntity logg = new LogEntity();
-          String timestamp=sourceAsMap.get("timestamp").toString();
+            String timestamp = sourceAsMap.get("timestamp").toString();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             formatter.setLenient(false);
             Date tsp;
-            try{
-                 tsp = formatter.parse(timestamp);
+            try {
+                tsp = formatter.parse(timestamp);
                 logg.setTimestamp(tsp);
-            }catch (Exception e){
-                throw  e;
+            } catch (Exception e) {
+                throw e;
             }
-           LocalDate dt= LocalDate.parse(sourceAsMap.get("date").toString());
+            LocalDate dt = LocalDate.parse(sourceAsMap.get("date").toString());
             String source = (String) sourceAsMap.get("source");
             String message = (String) sourceAsMap.get("message");
             logg.setID(id);
@@ -518,20 +525,18 @@ public class LogServiceImp implements LogService {
             logs.add(logg);
             System.out.println(timestamp);
             System.out.println(source + "----" + message);
-//            f++;
         }
-//        System.out.println(f);
-
+        System.out.println(logs.size());
         return logs;
     }
-
+//groupBys on given field
     @Override
     public Map<String, Long> groupByDynamic(String field) {
 
         QueryBuilder query = QueryBuilders.matchAllQuery();
 
         AggregationBuilder aggregation = AggregationBuilders
-                .terms("groupBy_"+field).field(field).size(4000);
+                .terms("groupBy_" + field).field(field).size(4000);
 
 
         SearchRequest searchRequest = new SearchRequest();
@@ -549,21 +554,21 @@ public class LogServiceImp implements LogService {
         }
 
         Aggregations aggs = searchResponse.getAggregations();
-        Terms fieldaggs = aggs.get("groupBy_"+field);
-int tot=0;
+        Terms fieldaggs = aggs.get("groupBy_" + field);
+        int tot = 0;
         List<? extends Terms.Bucket> sourceBuckets = fieldaggs.getBuckets();
         Map<String, Long> mp = new HashMap<>();
         for (Terms.Bucket sourceBucket : sourceBuckets) {
             System.out.println("fff");
             System.out.println(sourceBucket.getKeyAsString() + "---" + sourceBucket.getDocCount());
-            tot+=sourceBucket.getDocCount();
+            tot += sourceBucket.getDocCount();
             mp.put(sourceBucket.getKeyAsString(), sourceBucket.getDocCount());
         }
         System.out.println(tot);
-//        System.out.println(aggs);
         return mp;
     }
 
+    //projects only the fields specified
     @Override
     public List<LogEntity> projectByDynamic(String... fields) {
         QueryBuilder query = QueryBuilders.matchAllQuery();
@@ -596,34 +601,32 @@ int tot=0;
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             LogEntity logg = new LogEntity();
             System.out.println(sourceAsMap.toString());
-//f++;
             tothits++;
-            String source,message,id;
-            if(sourceAsMap.get("source")!=null){
+            String source, message, id;
+            if (sourceAsMap.get("source") != null) {
                 source = (String) sourceAsMap.get("source");
                 logg.setSource(source);
 
             }
-            if(sourceAsMap.get("message")!=null) {
+            if (sourceAsMap.get("message") != null) {
                 message = (String) sourceAsMap.get("message");
                 logg.setMessage(message);
             }
-            if(sourceAsMap.get("date")!=null) {
-                LocalDate dt= LocalDate.parse(sourceAsMap.get("date").toString());
+            if (sourceAsMap.get("date") != null) {
+                LocalDate dt = LocalDate.parse(sourceAsMap.get("date").toString());
                 logg.setDate(dt);
             }
-            if(sourceAsMap.get("timestamp")!=null) {
-                String timestamp=sourceAsMap.get("timestamp").toString();
+            if (sourceAsMap.get("timestamp") != null) {
+                String timestamp = sourceAsMap.get("timestamp").toString();
                 SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
                 formatter.setLenient(false);
                 Date tsp;
-                try{
+                try {
                     tsp = formatter.parse(timestamp);
                     logg.setTimestamp(tsp);
+                } catch (ParseException ex) {
+                    throw new RuntimeException(ex);
                 }
-                     catch (ParseException ex) {
-                        throw new RuntimeException(ex);
-                    }
 
             }
 

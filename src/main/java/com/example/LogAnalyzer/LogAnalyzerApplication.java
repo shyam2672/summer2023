@@ -10,7 +10,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 //import static com.example.LogAnalyzer.Configuration.Helper.ExceltoEs.ReadFromExcel;
@@ -30,8 +32,8 @@ public class LogAnalyzerApplication {
   LogService obj=context.getBean(LogService.class);
 //
 //// List<LogEntity> f= obj.savelogdata();
-//		String start = "2023-06-16T11:22:14";
-//		String end = "2024-06-16T11:22:14";
+		String start = "2023-06-16T17:52:14.691Z";
+		String end = "2023-06-16T17:52:14.692Z";
 
 //		obj.savelogdata();
 ////		 obj.filterBytime(LocalDateTime.parse(start),LocalDateTime.parse(end));
@@ -47,11 +49,12 @@ public class LogAnalyzerApplication {
 //		obj.search();
 //		System.out.println(obj.cardinalityAggs("date"));
 ////		System.out.println(obj.searchUsingScroll().size());
-//		List<LogEntity> f=obj.searchUsingPage();
+	obj.projectByDynamic("source","date");
+//		List<LogEntity> f=obj.searhUsingScroll();
 // for(LogEntity ff:f){
-//	 System.out.println(ff.getTimestamp());
-//	 System.out.println(ff.getMessage());
+//	 System.out.println(ff.toString());
 // }
+//		System.out.println(f.size());
 
 //
 // obj.search();

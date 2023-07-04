@@ -4,6 +4,7 @@ import com.example.LogAnalyzer.Entity.LogEntity;
 
 import java.text.ParseException;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +22,11 @@ public interface LogService {
     List<LogEntity> projectBySourceAndMessage();
 
 
-    List<LogEntity> filterBytime(LocalDateTime start,LocalDateTime end);
+
+    //fitler docs in given time range
+
+    //fitler docs in given time range
+    List<LogEntity> filterBytime(String start, String end);
 
     List<LogEntity> filterByterms();
 
