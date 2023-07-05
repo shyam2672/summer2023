@@ -98,7 +98,7 @@ public class LogServiceImp implements LogService {
         }
         logs.addAll(page.getContent());
         page.nextPageable();
-        System.out.println(logs.size());
+//        System.out.println(logs.size());
         return logs;
 
     }
@@ -479,12 +479,15 @@ public class LogServiceImp implements LogService {
     @Override
     public List<LogEntity> filterByTermsDynamic(String field, String... terms) throws ParseException {
 
-        if (field != "id" && field != "timestamp" && field != "source" && field != "message") {
+        if (!field.equals("id") &&  !field.equals("timestamp") &&  !field.equals("source") && !field.equals("message")) {
             throw new RuntimeException("invalid field name");
         }
+        for(String s:terms) System.out.println(s);
         TermsQueryBuilder termsQuery = QueryBuilders.termsQuery(field, terms);
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
                 .query(termsQuery);
+
+        sourceBuilder.size(10000);
 
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("loganalyzer");
