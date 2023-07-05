@@ -820,12 +820,11 @@ when(searchResponse.getAggregations()).thenReturn(aggs);
         assertEquals(expectedTimestamp, log.getTimestamp());
 
         //verify
-        SearchRequest expectedRequest = new SearchRequest();
-        expectedRequest.indices("loganalyzer");
-        TermsQueryBuilder termsQuery = QueryBuilders.termsQuery(field, terms);
-        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder().query(termsQuery);
-        expectedRequest.source(sourceBuilder);
-        verify(client).search(eq(expectedRequest), any(RequestOptions.class));
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

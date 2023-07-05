@@ -22,10 +22,7 @@ public class LogController {
         this.service = service;
     }
 
-    @PostMapping
-    public void savedata() {
-        service.savelogdata();
-    }
+
 
     @GetMapping("/search")
     public ModelAndView getData(){
@@ -69,6 +66,9 @@ public class LogController {
     public ModelAndView filterByTime(@RequestParam("start") String start,@RequestParam("end") String end){
         ModelAndView modelAndView=new ModelAndView("logs");
         List<LogEntity> logs=service.filterBytime(start,end);
+        System.out.println(1);
+        System.out.println(start + " " + end);
+        System.out.println(logs.size());
         modelAndView.addObject("logs",logs);
         System.out.println("hiii");
         return modelAndView;
