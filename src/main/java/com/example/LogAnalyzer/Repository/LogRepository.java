@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Map;
 
 @Repository
-public interface LogRepository extends ElasticsearchRepository<LogEntity, Integer> {
+public interface
+LogRepository extends ElasticsearchRepository<LogEntity, Integer> {
 
 }

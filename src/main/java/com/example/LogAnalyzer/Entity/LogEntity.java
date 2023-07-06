@@ -6,7 +6,6 @@ import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 @Document(indexName = "loganalyzer")
@@ -17,12 +16,11 @@ LogEntity {
     @Field(type= FieldType.Keyword)
     private String id;
 
-    @Field(type= FieldType.Date)
-    private LocalDateTime timestamp;
+    @Field(type = FieldType.Date)
+    private Date timestamp;
 
     @Field(type= FieldType.Keyword)
     private String source;
-
     @Field(type = FieldType.Date)
     private LocalDate date;
 
@@ -45,11 +43,11 @@ LogEntity {
         this.id = ID;
     }
 
-    public LocalDateTime getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
 
@@ -73,3 +71,5 @@ LogEntity {
 
 
 }
+
+

@@ -34,7 +34,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -43,28 +49,33 @@ public class LogServiceImp implements LogService {
 
 //    @Autowired
     private RestHighLevelClient client;
-    private  LogRepository logRepository;
+    private LogRepository logRepository;
 
-    private  ExceltoEs helper;
+    private ExceltoEs helper;
+
     @Autowired
-    public LogServiceImp(ExceltoEs helper,LogRepository logRepository,RestHighLevelClient client){
-        this.helper=helper;
-        this.logRepository=logRepository;
-        this.client=client;
+    public LogServiceImp(ExceltoEs helper, LogRepository logRepository, RestHighLevelClient client) {
+        this.helper = helper;
+        this.logRepository = logRepository;
+        this.client = client;
     }
 
 
     @Override
     public List<LogEntity> savelogdata() {
-        try{
-            List<LogEntity> logs;
-            logs= helper.WriteToEs(logRepository,helper.ReadFromExcel());
-            return logs;
+//        try {
+//            List<LogEntity> logs;
+//            logs =  helper.ReadFromExcel();
+//
+//
+//
+//            return logs;
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
 
-        }
-        catch (Exception e){
-throw new RuntimeException(e);
-        }
+        return helper.WriteToEs(logRepository,helper.ReadFromExcel());
     }
 
     @Override
@@ -72,30 +83,27 @@ throw new RuntimeException(e);
 
 
         Iterable<LogEntity> logs = logRepository.findAll();
-        List<LogEntity> loggs=new ArrayList<>();
+        List<LogEntity> loggs = new ArrayList<>();
         for (LogEntity log : logs) {
-         loggs.add(log);
+            loggs.add(log);
         }
         return loggs;
     }
 
 
-
     @Override
     public List<LogEntity> searchUsingPage() {
         Page<LogEntity> page = logRepository.findAll(Pageable.ofSize(1000));
-        List<LogEntity> logs=new ArrayList<>();
-        System.out.println(page.hasNext());
-        while(page.hasNext()){
+
+        List<LogEntity> logs = new ArrayList<>();
+        while (page.hasNext()) {
             logs.addAll(page.getContent());
-            System.out.println(page.getContent().size());
-            page=logRepository.findAll(page.nextPageable());
+//            System.out.println(page.getContent().size());
+            page = logRepository.findAll(page.nextPageable());
         }
         logs.addAll(page.getContent());
-       page.nextPageable();
-        for(LogEntity logg:logs){
-            System.out.println(logg.getID());
-        }
+        page.nextPageable();
+//
         System.out.println(logs.size());
         return logs;
 
@@ -103,9 +111,9 @@ throw new RuntimeException(e);
 
     @Override
     public List<LogEntity> searchUsingScroll() {
-        Scroll scroll=new Scroll(TimeValue.timeValueMinutes(1L));
+        Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
 
-        SearchRequest searchRequest=new SearchRequest();
+        SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("loganalyzer");
         searchRequest.scroll(scroll);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
@@ -121,25 +129,25 @@ throw new RuntimeException(e);
             throw new RuntimeException(e);
         }
         scrollId = searchResponse.getScrollId();
-        List<LogEntity> logs=new ArrayList<>();
-        int tothits=0;
+        List<LogEntity> logs = new ArrayList<>();
+        int tothits = 0;
 
         while (scrollId != null) {
 
-            SearchHits hits= searchResponse.getHits();
+            SearchHits hits = searchResponse.getHits();
 //              hits.iterator();
-            if(hits.getHits().length==0)break;
-            for(SearchHit hit: hits){
-                Map<String,Object> sourceAsMap=hit.getSourceAsMap();
+            if (hits.getHits().length == 0) break;
+            for (SearchHit hit : hits) {
+                Map<String, Object> sourceAsMap = hit.getSourceAsMap();
 //f++;
                 tothits++;
-                String source= (String) sourceAsMap.get("source");
-                String message= (String) sourceAsMap.get("message");
-                LogEntity logg=new LogEntity();
+                String source = (String) sourceAsMap.get("source");
+                String message = (String) sourceAsMap.get("message");
+                LogEntity logg = new LogEntity();
                 logg.setID(String.valueOf(tothits));
                 logg.setSource(source);
                 logg.setMessage(message);
-                System.out.println(source+ "----" + message);
+                System.out.println(source + "----" + message);
                 logs.add(logg);
             }
 
@@ -156,7 +164,7 @@ throw new RuntimeException(e);
 
     @Override
     public Map<String, Long> tabularAggregation() {
-        QueryBuilder query=QueryBuilders.matchAllQuery();
+        QueryBuilder query = QueryBuilders.matchAllQuery();
         AggregationBuilder aggregation = AggregationBuilders
                 .terms("timestamps_per_source").field("source").subAggregation(AggregationBuilders.cardinality("unique_timestamps").field("timestamp"));
 
@@ -167,21 +175,21 @@ throw new RuntimeException(e);
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
-            System.out.println(searchResponse==null);
+            System.out.println(searchResponse == null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        Aggregations aggs=searchResponse.getAggregations();
-        Terms sourceaggs=aggs.get("timestamps_per_source");
+        Aggregations aggs = searchResponse.getAggregations();
+        Terms sourceaggs = aggs.get("timestamps_per_source");
 
-        List<? extends Terms.Bucket> sourceBuckets=sourceaggs.getBuckets();
-        Map<String,Long> mp=new HashMap<>();
-        for(Terms.Bucket sourcebucket:sourceBuckets){
+        List<? extends Terms.Bucket> sourceBuckets = sourceaggs.getBuckets();
+        Map<String, Long> mp = new HashMap<>();
+        for (Terms.Bucket sourcebucket : sourceBuckets) {
             String source = sourcebucket.getKeyAsString();
 
             Cardinality uniqueTimestamps = sourcebucket.getAggregations().get("unique_timestamps");
             long value = uniqueTimestamps.getValue();
-            mp.put(source,value);
+            mp.put(source, value);
             System.out.println("Source: " + source + ", Total Timestamps: " + value);
         }
         return mp;
@@ -208,13 +216,12 @@ throw new RuntimeException(e);
         Aggregations aggs = searchResponse.getAggregations();
 
         Terms sourcesAgg = aggs.get("sources");
-        Map<String,Long> mp=new HashMap<>();
+        Map<String, Long> mp = new HashMap<>();
 
         for (Terms.Bucket sourcesBucket : sourcesAgg.getBuckets()) {
             String source = sourcesBucket.getKeyAsString();
 
             Histogram timestampsAgg = sourcesBucket.getAggregations().get("timestamps");
-
 
 
             for (Histogram.Bucket timestampsBucket : timestampsAgg.getBuckets()) {
@@ -223,7 +230,7 @@ throw new RuntimeException(e);
                 Cardinality uniqueIds = timestampsBucket.getAggregations().get("unique_ids");
                 long value = uniqueIds.getValue();
                 System.out.println("Source: " + source + ", Timestamp: " + timestamp + ", Unique IDs: " + value);
-                mp.put(source+"-"+timestamp,value);
+                mp.put(source + "-" + timestamp, value);
             }
         }
         return mp;
@@ -239,7 +246,7 @@ throw new RuntimeException(e);
         SearchRequest searchRequest = new SearchRequest("loganalyzer");
         searchRequest.source(new SearchSourceBuilder()
                 .aggregation(aggregationBuilder));
-QueryPrinter.printQuery(searchRequest,client);
+        QueryPrinter.printQuery(searchRequest, client);
         SearchResponse searchResponse = null;
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -273,23 +280,23 @@ QueryPrinter.printQuery(searchRequest,client);
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
-            System.out.println(searchResponse==null);
+            System.out.println(searchResponse == null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        Aggregations aggs=searchResponse.getAggregations();
-        Terms sourceaggs=aggs.get("sources");
+        Aggregations aggs = searchResponse.getAggregations();
+        Terms sourceaggs = aggs.get("sources");
 
-        List<? extends Terms.Bucket> sourceBuckets=sourceaggs.getBuckets();
-   Map<String,Long> mp=new HashMap<>();
-        for(Terms.Bucket sourceBucket:sourceBuckets){
+        List<? extends Terms.Bucket> sourceBuckets = sourceaggs.getBuckets();
+        Map<String, Long> mp = new HashMap<>();
+        for (Terms.Bucket sourceBucket : sourceBuckets) {
             System.out.println("fff");
-            System.out.println(sourceBucket.getKeyAsString()+ "---" + sourceBucket.getDocCount());
-            mp.put(sourceBucket.getKeyAsString(),sourceBucket.getDocCount());
+            System.out.println(sourceBucket.getKeyAsString() + "---" + sourceBucket.getDocCount());
+            mp.put(sourceBucket.getKeyAsString(), sourceBucket.getDocCount());
         }
 //        System.out.println(aggs);
-return mp;
+        return mp;
     }
 
     @Override
@@ -301,7 +308,7 @@ return mp;
         searchSource.from(0);
         searchSource.size(1000);
 
-        String[] includes = { "source", "message" };
+        String[] includes = {"source", "message"};
         String[] excludes = null;
         searchSource.fetchSource(includes, excludes);
 
@@ -310,30 +317,30 @@ return mp;
 
         SearchResponse response;
         try {
-            response = client.search(searchRequest,RequestOptions.DEFAULT);
+            response = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         System.out.println(response);
 
-         SearchHits hits= response.getHits();
+        SearchHits hits = response.getHits();
 
-         List<LogEntity> logs=new ArrayList<>();
-         int tothits=0;
-         for(SearchHit hit: hits){
-             Map<String,Object> sourceAsMap=hit.getSourceAsMap();
+        List<LogEntity> logs = new ArrayList<>();
+        int tothits = 0;
+        for (SearchHit hit : hits) {
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
 //f++;
-             tothits++;
-             String source= (String) sourceAsMap.get("source");
-             String message= (String) sourceAsMap.get("message");
-             LogEntity logg=new LogEntity();
-             logg.setID(String.valueOf(tothits));
-             logg.setSource(source);
-             logg.setMessage(message);
-             System.out.println(source+ "----" + message);
-logs.add(logg);
-         }
+            tothits++;
+            String source = (String) sourceAsMap.get("source");
+            String message = (String) sourceAsMap.get("message");
+            LogEntity logg = new LogEntity();
+            logg.setID(String.valueOf(tothits));
+            logg.setSource(source);
+            logg.setMessage(message);
+            System.out.println(source + "----" + message);
+            logs.add(logg);
+        }
 
         return logs;
     }
@@ -355,7 +362,7 @@ logs.add(logg);
 
         SearchResponse response;
         try {
-            response = client.search(searchRequest,RequestOptions.DEFAULT);
+            response = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -364,30 +371,43 @@ logs.add(logg);
 
 //        int f=0;
 
-        List<LogEntity> logs=new ArrayList<>();
+        List<LogEntity> logs = new ArrayList<>();
 
-        for(SearchHit hit: hits){
-            Map<String,Object> sourceAsMap=hit.getSourceAsMap();
-            String id=(String) sourceAsMap.get("ID");
-            LocalDateTime timestamp= (LocalDateTime) sourceAsMap.get("timestamp");
-            String source= (String) sourceAsMap.get("source");
-            String message= (String) sourceAsMap.get("message");
-            LogEntity logg=new LogEntity();
+        for (SearchHit hit : hits) {
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            String id = (String) sourceAsMap.get("ID");
+            LogEntity logg = new LogEntity();
+            String timestamp=sourceAsMap.get("timestamp").toString();
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            formatter.setLenient(false);
+            Date tsp;
+            try{
+                tsp = formatter.parse(timestamp);
+                logg.setTimestamp(tsp);
+            }catch (Exception e){
+                System.out.println(e);
+            }
+
+            LocalDate dt= LocalDate.parse(sourceAsMap.get("date").toString());
+            String source = (String) sourceAsMap.get("source");
+            String message = (String) sourceAsMap.get("message");
             logg.setID(id);
-            logg.setTimestamp(timestamp);
+
             logg.setSource(source);
             logg.setMessage(message);
+            logg.setDate(dt);
             logs.add(logg);
-            System.out.println(source+ "----" + message);
-//f++;
+            System.out.println(timestamp);
+            System.out.println(source + "----" + message);
+//
+//            f++;
         }
 //        System.out.println(f);
         return logs;
     }
-
     @Override
     public List<LogEntity> filterByterms() {
-        TermsQueryBuilder termsfilter=QueryBuilders.termsQuery("source","standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7","standalone-reporting-sch-slave-deployment-6d978d7d87-b9fvc");
+        TermsQueryBuilder termsfilter = QueryBuilders.termsQuery("source", "standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7", "standalone-reporting-sch-slave-deployment-6d978d7d87-b9fvc");
 
         QueryBuilder query = QueryBuilders.boolQuery().must(QueryBuilders.matchAllQuery()).filter(termsfilter);
 
@@ -403,7 +423,7 @@ logs.add(logg);
 
         SearchResponse response;
         try {
-            response = client.search(searchRequest,RequestOptions.DEFAULT);
+            response = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -411,21 +431,35 @@ logs.add(logg);
         SearchHits hits = response.getHits();
 
 //        int f=0;
-        List<LogEntity> logs=new ArrayList<>();
+        List<LogEntity> logs = new ArrayList<>();
 
-        for(SearchHit hit: hits){
-            Map<String,Object> sourceAsMap=hit.getSourceAsMap();
-            String id=(String) sourceAsMap.get("ID");
-            LocalDateTime timestamp= (LocalDateTime) sourceAsMap.get("timestamp");
-            String source= (String) sourceAsMap.get("source");
-            String message= (String) sourceAsMap.get("message");
-            LogEntity logg=new LogEntity();
+        for (SearchHit hit : hits) {
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            String id = (String) sourceAsMap.get("ID");
+            LogEntity logg = new LogEntity();
+            String timestamp=sourceAsMap.get("timestamp").toString();
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            formatter.setLenient(false);
+            Date tsp;
+            try{
+                tsp = formatter.parse(timestamp);
+                logg.setTimestamp(tsp);
+            }catch (Exception e){
+                throw new RuntimeException(e);
+            }
+
+            LocalDate dt= LocalDate.parse(sourceAsMap.get("date").toString());
+            String source = (String) sourceAsMap.get("source");
+            String message = (String) sourceAsMap.get("message");
             logg.setID(id);
-            logg.setTimestamp(timestamp);
+
             logg.setSource(source);
             logg.setMessage(message);
+            logg.setDate(dt);
             logs.add(logg);
-            System.out.println(source+ "----" + message);
+            System.out.println(timestamp);
+            System.out.println(source + "----" + message);
+//
 //            f++;
         }
 //        System.out.println(f);
@@ -433,9 +467,61 @@ logs.add(logg);
         return logs;
     }
 
+    @Override
+    public List<LogEntity> filterByTermsDynamic(String field, String... terms) throws ParseException {
 
+        if(field!="id" && field!="timestamp" && field!="source" && field!="message"){
+            throw new RuntimeException("invalid field name");
+        }
+        TermsQueryBuilder termsQuery = QueryBuilders.termsQuery(field, terms);
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
+                .query(termsQuery);
 
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("loganalyzer");
+        searchRequest.source(sourceBuilder);
+        QueryPrinter.printQuery(searchRequest, client);
 
+        SearchResponse response;
+        try {
+            response = client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        SearchHits hits = response.getHits();
+
+        List<LogEntity> logs = new ArrayList<>();
+        for (SearchHit hit : hits) {
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            String id = (String) sourceAsMap.get("ID");
+            LogEntity logg = new LogEntity();
+          String timestamp=sourceAsMap.get("timestamp").toString();
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            formatter.setLenient(false);
+            Date tsp;
+            try{
+                 tsp = formatter.parse(timestamp);
+                logg.setTimestamp(tsp);
+            }catch (Exception e){
+                System.out.println(e);
+            }
+           LocalDate dt= LocalDate.parse(sourceAsMap.get("date").toString());
+            String source = (String) sourceAsMap.get("source");
+            String message = (String) sourceAsMap.get("message");
+            logg.setID(id);
+            logg.setSource(source);
+            logg.setMessage(message);
+            logg.setDate(dt);
+            logs.add(logg);
+            System.out.println(timestamp);
+            System.out.println(source + "----" + message);
+//            f++;
+        }
+//        System.out.println(f);
+
+        return logs;
+    }
 
 
 }

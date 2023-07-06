@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
+import java.text.ParseException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,8 +18,7 @@ import java.util.List;
 @SpringBootApplication
 @ComponentScan(basePackages = "com.example.LogAnalyzer")
 public class LogAnalyzerApplication {
-	@Autowired
-	LogRepository logRepository;
+
 //@Autowired
 //static RestHighLevelClient client;
 //   static RestHighLevelClient client=new RestHighLevelClient(RestClient.builder(new HttpHost("localhost",9200,"http")));
@@ -39,13 +39,21 @@ public class LogAnalyzerApplication {
 //		obj.savelogdata();
 
 //		 obj.filterBytime(LocalDateTime.parse(start),LocalDateTime.parse(end));
+//obj.search();
+//		try {
+//			obj.filterByTermsDynamic("source","standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7","standalone-reporting-sch-slave-deployment-6d978d7d87-b9fvc");
+//		} catch (ParseException e) {
+//			throw new RuntimeException(e);
+//		}
 
-		System.out.println(obj.cardinalityAggs("date"));
+//		System.out.println(obj.cardinalityAggs("date"));
 
 //		System.out.println(obj.searchUsingScroll().size());
-// for(LogEntity ff:f){
-//	 System.out.println(ff.getMessage());
-// }
+		List<LogEntity> f=obj.searchUsingPage();
+ for(LogEntity ff:f){
+	 System.out.println(ff.getTimestamp());
+	 System.out.println(ff.getMessage());
+ }
 
 //
 // obj.search();
@@ -55,51 +63,5 @@ public class LogAnalyzerApplication {
 	}
 
 
-
-//	public static void AggDemo(){
-//		SearchSourceBuilder searchSourceBuilder=new SearchSourceBuilder().
-//				size(0).
-//				query(QueryBuilders.matchAllQuery()).aggregation(AggregationBuilders.terms("continents").field("geoip.continent_name").
-//						subAggregation(AggregationBuilders.terms("cities").field("geoip.city_name")));
-//
-//		SearchRequest request=new SearchRequest().indices("kibana_sample_data_ecommerce").source(searchSourceBuilder);
-//
-//
-//		try {
-//			SearchResponse response=client.search(request,
-//					RequestOptions.DEFAULT);
-//
-////			System.out.println(response);
-//
-//			Aggregations aggs=response.getAggregations();
-//
-//			Terms continentaggs=aggs.get("continents");
-//
-//			List<? extends Terms.Bucket> continentBuckets=continentaggs.getBuckets();
-//
-//			for(Terms.Bucket continentBucket: continentBuckets){
-//				System.out.println("f");
-//				System.out.println(continentBucket.getKeyAsString() + "---" + continentBucket.getDocCount());
-//				aggs =continentBucket.getAggregations();
-//
-//				Terms citiesAggs=aggs.get("cities");
-//
-//				List<? extends Terms.Bucket> cityBuckets=citiesAggs.getBuckets();
-//
-//				for(Terms.Bucket cityBucket:cityBuckets){
-//					System.out.println(cityBucket.getKeyAsString() + "---" + cityBucket.getDocCount());
-//				}
-//
-//
-//			}
-//
-//
-//
-//		} catch (IOException e) {
-//			throw new RuntimeException(e);
-//		}
-//
-//
-//	}
 
 }

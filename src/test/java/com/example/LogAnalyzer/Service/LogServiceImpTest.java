@@ -3,7 +3,6 @@ package com.example.LogAnalyzer.Service;
 import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Helper.ExceltoEs;
 import com.example.LogAnalyzer.Repository.LogRepository;
-import org.apache.xmlbeans.impl.xb.xsdschema.ListDocument;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -11,15 +10,14 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregations;
 import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
-import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.Cardinality;
-import org.elasticsearch.search.aggregations.metrics.ParsedCardinality;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -29,13 +27,17 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
+<<<<<<< HEAD
+=======
+import java.time.Instant;
+import java.time.LocalDate;
+>>>>>>> 58dc878 (dynamic termsfilter)
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,9 +67,10 @@ class LogServiceImpTest {
     public static void initlogs(){
         LogEntity log1 = new LogEntity();
         log1.setID(String.valueOf(1));
-        LocalDateTime date;
-        String datetime="2023-06-16T11:22:14";
-        date = LocalDateTime.parse(datetime);
+        Date date;
+
+
+        date = new Date();
         log1.setTimestamp(date);
         log1.setSource("source");
         log1.setMessage("message");
@@ -192,7 +195,8 @@ class LogServiceImpTest {
         String end = "2024-06-16T11:22:14";
         Map<String, Object> sourceAsMap = new HashMap<>();
         sourceAsMap.put("ID", "1");
-        sourceAsMap.put("timestamp", LocalDateTime.parse(start));
+        sourceAsMap.put("timestamp", "2023-06-16T17:52:14.189Z");
+        sourceAsMap.put("date",LocalDate.now());
         sourceAsMap.put("source","source1");
         sourceAsMap.put("message","message1");
 
@@ -217,6 +221,58 @@ class LogServiceImpTest {
         assertEquals("1", logs.get(0).getID());
     }
 
+<<<<<<< HEAD
+=======
+    @Test
+    public void filterByTimeTestFail(){
+        SearchResponse searchResponse = mock(SearchResponse.class);
+
+        SearchHits searchHits = mock(SearchHits.class);
+
+        SearchHit searchHit = mock(SearchHit.class);
+
+        String start = "2023-06-16T11:22:14";
+        String end = "2023-06-16T11:23:14";
+        String now= "2024-06-16T11:22:14";
+        Map<String, Object> sourceAsMap = new HashMap<>();
+        sourceAsMap.put("ID", "1");
+        sourceAsMap.put("timestamp", "2023-06-16T12:22:15.189Z");
+        sourceAsMap.put("date",LocalDate.now());
+
+        sourceAsMap.put("source","source1");
+        sourceAsMap.put("message","message1");
+
+
+        when(searchResponse.getHits()).thenReturn(searchHits);
+
+        when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
+
+        when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
+
+        try {
+            when(client.search(any(), any())).thenReturn(searchResponse);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+
+        List<LogEntity> logs = logService.filterBytime(LocalDateTime.parse(start), LocalDateTime.parse(end));
+
+        assertEquals(1, logs.size());
+   Date ts= logs.get(0).getTimestamp();
+        System.out.println(ts);
+        Instant instant = ts.toInstant();
+
+// Convert Instant to LocalDateTime
+        LocalDateTime tsp = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
+
+        boolean isAfter = tsp.isAfter(LocalDateTime.parse(start));
+        boolean isBefore = tsp.isBefore(LocalDateTime.parse(end));
+        assertFalse(isBefore && isAfter);
+
+    }
+>>>>>>> 58dc878 (dynamic termsfilter)
 
     @Test
     public void filterByTermsTest()
@@ -230,7 +286,47 @@ class LogServiceImpTest {
 
         Map<String, Object> sourceAsMap = new HashMap<>();
         sourceAsMap.put("ID", "1");
+<<<<<<< HEAD
         sourceAsMap.put("timestamp", LocalDateTime.now());
+=======
+        sourceAsMap.put("timestamp", "2023-06-16T17:52:14.189Z");
+
+        sourceAsMap.put("date", LocalDate.now());
+        sourceAsMap.put("source", "standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7");
+        sourceAsMap.put("message", "message1");
+
+
+        when(searchResponse.getHits()).thenReturn(searchHits);
+
+        when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
+
+        when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
+
+        try {
+            when(client.search(any(), any())).thenReturn(searchResponse);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<LogEntity> logs = logService.filterByterms();
+        assertEquals("standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7", logs.get(0).getSource());
+    }
+
+    @Test
+    public void filterByTermsTestFail()
+    {
+
+        SearchResponse searchResponse = mock(SearchResponse.class);
+
+        SearchHits searchHits = mock(SearchHits.class);
+
+        SearchHit searchHit = mock(SearchHit.class);
+
+        Map<String, Object> sourceAsMap = new HashMap<>();
+        sourceAsMap.put("ID", "1");
+        sourceAsMap.put("timestamp", "2023-06-16T17:52:14.189Z");
+        sourceAsMap.put("date",LocalDate.now());
+>>>>>>> 58dc878 (dynamic termsfilter)
         sourceAsMap.put("source", "source1");
         sourceAsMap.put("message", "message1");
 
@@ -545,6 +641,43 @@ when(searchResponse.getAggregations()).thenReturn(aggs);
         assertEquals(100L, cardinality);
     }
 
+
+    @Test
+    public void testFilterByTermsDynamic() throws Exception {
+        String field = "source";
+        String[] terms = { "app-1", "app-2" };
+        String timestamp = "2023-06-30T12:34:56.789Z";
+        String source = "app-1";
+        String message = "message";
+        Map<String, Object> sourceAsMap = Map.of("ID", "1", "timestamp", timestamp, "date", "2023-06-30", "source", source, "message", message);
+        SearchHit hit = mock(SearchHit.class);
+        when(hit.getSourceAsMap()).thenReturn(sourceAsMap);
+        SearchHits hits = mock(SearchHits.class);
+        when(hits.iterator()).thenReturn(List.of(hit).iterator());
+        SearchResponse response = mock(SearchResponse.class);
+        when(response.getHits()).thenReturn(hits);
+        when(client.search(any(SearchRequest.class), any(RequestOptions.class))).thenReturn(response);
+
+        List<LogEntity> logs = logService.filterByTermsDynamic(field, terms);
+
+        assertEquals(1, logs.size());
+        LogEntity log = logs.get(0);
+        assertEquals("1", log.getID());
+        assertEquals(LocalDate.of(2023, 6, 30), log.getDate());
+        assertEquals(source, log.getSource());
+        assertEquals(message, log.getMessage());
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        formatter.setLenient(false);
+        Date expectedTimestamp = formatter.parse(timestamp);
+        assertEquals(expectedTimestamp, log.getTimestamp());
+
+//        SearchRequest expectedRequest = new SearchRequest();
+//        expectedRequest.indices("loganalyzer");
+//        TermsQueryBuilder termsQuery = QueryBuilders.termsQuery(field, terms);
+//        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder().query(termsQuery);
+//        expectedRequest.source(sourceBuilder);
+//        verify(client).search(eq(expectedRequest), any(RequestOptions.class));
+    }
 
 
 
