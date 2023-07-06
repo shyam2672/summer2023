@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Logs</title>
+</head>
+<body>
+<h1>Logs</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Timestamp</th>
+        <th>Source</th>
+        <th>Date</th>
+        <th>Message</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="log : ${logs}">
+        <td th:text="${log.timestamp}"></td>
+        <td th:text="${log.source}"></td>
+        <td th:text="${log.date}"></td>
+        <td th:text="${log.message}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
