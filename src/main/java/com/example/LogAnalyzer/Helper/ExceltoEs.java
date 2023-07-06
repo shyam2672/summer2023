@@ -13,6 +13,7 @@ import java.time.ZoneId;
 import java.util.*;
 
 
+//helper class to read data from excel file and write it on es
 @Component
 public class ExceltoEs {
 
@@ -22,14 +23,16 @@ public class ExceltoEs {
 
     public static String file = "/Users/shyamprajapati/Downloads/LogAnalyzer/src/main/resources/static/logsdata.xlsx";
 
+    //file type validation
     public boolean
     validate(String s) {
         String extension = FilenameUtils.getExtension(s);
         return extension.equalsIgnoreCase("xlsx") || extension.equalsIgnoreCase("xls");
     }
 
-    public LogEntity
-    isvalid(Row row) {
+
+    //returns an entity if row is valid
+    public LogEntity isvalid(Row row) {
 
         Iterator<Cell> cellsInRow = row.iterator();
 
@@ -40,12 +43,11 @@ public class ExceltoEs {
 
         while (cellsInRow.hasNext()) {
 
-//                    System.out.println("ff");
             Cell currentCell = cellsInRow.next();
 
             switch (cellIdx) {
                 case 0:
-
+                     // cell should contain some date time value
                     if (DateUtil.isCellDateFormatted(currentCell)) {
                         Date timestamp = currentCell.getDateCellValue();
                         logdata.setTimestamp(timestamp);
@@ -63,6 +65,7 @@ public class ExceltoEs {
 
                 case 1:
                     String source = currentCell.getStringCellValue();
+                    //source name cannot be null
                     if (source == null || source.equals("")) {
                         throw new RuntimeException("source cannot be null");
                     }
@@ -71,6 +74,7 @@ public class ExceltoEs {
 
                 case 2:
                     String message = currentCell.getStringCellValue();
+                    //message  cannot be null
                     if (message == null || message.equals("")) {
                         throw new RuntimeException("message cannot be null");
                     }
@@ -91,8 +95,8 @@ public class ExceltoEs {
         return logdata;
     }
 
-    public List<LogEntity>
-    ReadFromExcel() {
+    //utility function that reads data from excel file an returns a list of LogEntity
+    public List<LogEntity> ReadFromExcel() {
 
         if (!validate(file)) {
             throw new RuntimeException("invalid file type");
@@ -100,6 +104,7 @@ public class ExceltoEs {
 
         try {
             Workbook workbook = WorkbookFactory.create(new FileInputStream(file));
+            //it is assumed that all the data wil be on first sheet
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rows = sheet.iterator();
 
@@ -131,36 +136,25 @@ public class ExceltoEs {
 
     }
 
-<<<<<<< HEAD
-    public List<LogEntity>  WriteToEs(LogRepository logRepository, List<LogEntity> logs){
-            for(LogEntity loge: logs){
-//                String id=UUID.randomUUID().toString();
-//                loge.setID(id);
-                System.out.println(logRepository.save(loge).getDate());
-            }
-try{
-    return logs;
-=======
-    public List<LogEntity> WriteToEs(LogRepository
-                                             logRepository, List<LogEntity> logs) {
+
+
+
+    //takes a list of LogEntities and stores them in es
+    public List<LogEntity> WriteToEs(LogRepository logRepository, List<LogEntity> logs) {
         List<LogEntity> Logs = new ArrayList<>();
         for (LogEntity loge : logs) {
 //                String id=UUID.randomUUID().toString();
 //                loge.setID(id);
-            System.out.println(loge.getTimestamp());
-            // Print query
+//            System.out.println(loge.getTimestamp());
 
             Logs.add(logRepository.save(loge));
         }
         try {
             return Logs;
->>>>>>> 58dc878 (dynamic termsfilter)
 //   return (List<LogEntity>) logRepository.saveAll(logs);
         } catch (Exception e) {
-
             throw new RuntimeException(e);
         }
-
 
     }
 

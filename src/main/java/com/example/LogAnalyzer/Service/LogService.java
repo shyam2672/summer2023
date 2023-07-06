@@ -15,8 +15,11 @@ public interface LogService {
 
     Map<String, Long> groupBysource();
 
+    Map<String, Long> groupByDynamic(String field);
+
 
     List<LogEntity> projectBySourceAndMessage();
+
 
     List<LogEntity> filterBytime(LocalDateTime start,LocalDateTime end);
 
@@ -34,4 +37,5 @@ public interface LogService {
 
     List<LogEntity> filterByTermsDynamic(String field, String ...terms) throws ParseException;
 
+    List<LogEntity> projectByDynamic(String... fields);
 }

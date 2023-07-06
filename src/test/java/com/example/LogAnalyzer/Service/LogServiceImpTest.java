@@ -679,6 +679,84 @@ when(searchResponse.getAggregations()).thenReturn(aggs);
 //        verify(client).search(eq(expectedRequest), any(RequestOptions.class));
     }
 
+    @Test
+    public void testGroupByDynamic() throws IOException {
+
+        SearchResponse searchResponse = mock(SearchResponse.class);
+        Aggregations aggs = mock(Aggregations.class);
+        Terms sourceaggs = mock(Terms.class);
+        when(searchResponse.getAggregations()).thenReturn(aggs);
+        Terms.Bucket bucket1 = mock(Terms.Bucket.class);
+        when(bucket1.getKeyAsString()).thenReturn("field1");
+        when(bucket1.getDocCount()).thenReturn(10L);
+        Terms.Bucket bucket2 = mock(Terms.Bucket.class);
+        when(bucket2.getKeyAsString()).thenReturn("field2");
+        when(bucket2.getDocCount()).thenReturn(20L);
+        List<Terms.Bucket> terms= new ArrayList<Terms.Bucket>();
+        terms.add(bucket1);
+        terms.add(bucket2);
+        List<Terms.Bucket> buckets = List.of(bucket1, bucket2);
+        doAnswer(invocation -> {
+            return buckets;
+        }).when(sourceaggs).getBuckets();
+        when(aggs.get("groupBy_field")).thenReturn(sourceaggs);
+
+        try {
+            when(client.search( any(), any())).thenReturn(searchResponse);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        Map<String, Long> result = logService.groupByDynamic("field");
+//
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        verify(searchResponse).getAggregations();
+        assertEquals(2, result.size());
+        assertEquals(Long.valueOf(10L), result.get("field1"));
+        assertEquals(Long.valueOf(20L), result.get("field2"));
+
+    }
+
+
+    @Test
+    public void projectiondynamictest(){
+        SearchResponse searchResponse = mock(SearchResponse.class);
+
+        SearchHits searchHits = mock(SearchHits.class);
+
+        SearchHit searchHit = mock(SearchHit.class);
+
+        Map<String, Object> sourceAsMap = new HashMap<>();
+        sourceAsMap.put("source", "source1");
+        sourceAsMap.put("message", "message1");
+        sourceAsMap.put("timestamp", "2023-06-16T12:22:15.189Z");
+        sourceAsMap.put("date", "2023-06-16");
+
+        when(searchResponse.getHits()).thenReturn(searchHits);
+
+        when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
+
+        when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
+
+        try {
+            when(client.search(any(), any())).thenReturn(searchResponse);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<LogEntity> logs = logService.projectByDynamic("source","message","timestamp","date");
+
+        assertEquals(1, logs.size());
+        assertEquals("source1", logs.get(0).getSource());
+        assertEquals("message1", logs.get(0).getMessage());
+
+    }
 
 
 

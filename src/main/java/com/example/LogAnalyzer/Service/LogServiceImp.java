@@ -36,11 +36,8 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -85,6 +82,7 @@ public class LogServiceImp implements LogService {
         Iterable<LogEntity> logs = logRepository.findAll();
         List<LogEntity> loggs = new ArrayList<>();
         for (LogEntity log : logs) {
+            System.out.println(log.getID());
             loggs.add(log);
         }
         return loggs;
@@ -299,6 +297,7 @@ public class LogServiceImp implements LogService {
         return mp;
     }
 
+
     @Override
     public List<LogEntity> projectBySourceAndMessage() {
         QueryBuilder query = QueryBuilders.matchAllQuery();
@@ -344,6 +343,8 @@ public class LogServiceImp implements LogService {
 
         return logs;
     }
+
+
 
     @Override
     public List<LogEntity> filterBytime(LocalDateTime start, LocalDateTime end) {
@@ -435,6 +436,7 @@ public class LogServiceImp implements LogService {
 
         for (SearchHit hit : hits) {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            System.out.println(sourceAsMap.toString());
             String id = (String) sourceAsMap.get("ID");
             LogEntity logg = new LogEntity();
             String timestamp=sourceAsMap.get("timestamp").toString();
@@ -504,7 +506,7 @@ public class LogServiceImp implements LogService {
                  tsp = formatter.parse(timestamp);
                 logg.setTimestamp(tsp);
             }catch (Exception e){
-                System.out.println(e);
+                throw  e;
             }
            LocalDate dt= LocalDate.parse(sourceAsMap.get("date").toString());
             String source = (String) sourceAsMap.get("source");
@@ -523,5 +525,114 @@ public class LogServiceImp implements LogService {
         return logs;
     }
 
+    @Override
+    public Map<String, Long> groupByDynamic(String field) {
+
+        QueryBuilder query = QueryBuilders.matchAllQuery();
+
+        AggregationBuilder aggregation = AggregationBuilders
+                .terms("groupBy_"+field).field(field).size(4000);
+
+
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("loganalyzer");
+        searchRequest.source(new SearchSourceBuilder().query(query).aggregation(aggregation));
+        QueryPrinter.printQuery(searchRequest, client);
+
+        SearchResponse searchResponse;
+        try {
+            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+            System.out.println(searchResponse == null);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Aggregations aggs = searchResponse.getAggregations();
+        Terms fieldaggs = aggs.get("groupBy_"+field);
+int tot=0;
+        List<? extends Terms.Bucket> sourceBuckets = fieldaggs.getBuckets();
+        Map<String, Long> mp = new HashMap<>();
+        for (Terms.Bucket sourceBucket : sourceBuckets) {
+            System.out.println("fff");
+            System.out.println(sourceBucket.getKeyAsString() + "---" + sourceBucket.getDocCount());
+            tot+=sourceBucket.getDocCount();
+            mp.put(sourceBucket.getKeyAsString(), sourceBucket.getDocCount());
+        }
+        System.out.println(tot);
+//        System.out.println(aggs);
+        return mp;
+    }
+
+    @Override
+    public List<LogEntity> projectByDynamic(String... fields) {
+        QueryBuilder query = QueryBuilders.matchAllQuery();
+
+        SearchSourceBuilder searchSource = new SearchSourceBuilder();
+        searchSource.query(query);
+        searchSource.from(0);
+        searchSource.size(10000);
+
+        String[] includes = fields;
+        String[] excludes = null;
+        searchSource.fetchSource(includes, excludes);
+
+        SearchRequest searchRequest = new SearchRequest("loganalyzer");
+        searchRequest.source(searchSource);
+
+        SearchResponse response;
+        try {
+            response = client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        SearchHits hits = response.getHits();
+
+        List<LogEntity> logs = new ArrayList<>();
+        int tothits = 0;
+        for (SearchHit hit : hits) {
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            LogEntity logg = new LogEntity();
+            System.out.println(sourceAsMap.toString());
+//f++;
+            tothits++;
+            String source,message,id;
+            if(sourceAsMap.get("source")!=null){
+                source = (String) sourceAsMap.get("source");
+                logg.setSource(source);
+
+            }
+            if(sourceAsMap.get("message")!=null) {
+                message = (String) sourceAsMap.get("message");
+                logg.setMessage(message);
+            }
+            if(sourceAsMap.get("date")!=null) {
+                LocalDate dt= LocalDate.parse(sourceAsMap.get("date").toString());
+                logg.setDate(dt);
+            }
+            if(sourceAsMap.get("timestamp")!=null) {
+                String timestamp=sourceAsMap.get("timestamp").toString();
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                formatter.setLenient(false);
+                Date tsp;
+                try{
+                    tsp = formatter.parse(timestamp);
+                    logg.setTimestamp(tsp);
+                }
+                     catch (ParseException ex) {
+                        throw new RuntimeException(ex);
+                    }
+
+            }
+
+            logs.add(logg);
+        }
+        System.out.println(
+                logs.size()
+        );
+        return logs;
+    }
 
 }
