@@ -80,7 +80,7 @@ public class LogServiceImp implements LogService {
         Iterable<LogEntity> logs = logRepository.findAll();
         List<LogEntity> loggs = new ArrayList<>();
         for (LogEntity log : logs) {
-            System.out.println(log.getID());
+//            System.out.println(log.getID());
             loggs.add(log);
         }
         return loggs;

@@ -31,11 +31,8 @@ import org.springframework.data.domain.Pageable;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-<<<<<<< HEAD
-=======
 import java.time.Instant;
 import java.time.LocalDate;
->>>>>>> 58dc878 (dynamic termsfilter)
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -87,7 +84,7 @@ class LogServiceImpTest {
 
     @Test
     public void saveTest(){
-
+        //stubbing the helper object as it is tested separately
         when(helper.ReadFromExcel()).thenReturn(logs);
         when(helper.WriteToEs(any(LogRepository.class),anyList())).thenReturn(logs);
 
@@ -97,7 +94,7 @@ class LogServiceImpTest {
 
     @Test
     public void searchTest() {
-
+        //stubbing the log repository
         when(logRepository.findAll()).thenReturn(logs);
         List<LogEntity> actualLogs = logService.search();
         assertEquals(logs, actualLogs);
@@ -107,36 +104,54 @@ class LogServiceImpTest {
     @Test
     public void groupByTest(){
 
-
+        // mocking the SearchResponse Class
         SearchResponse searchResponse = mock(SearchResponse.class);
+
+        // mocking the Aggregations Class
         Aggregations aggs = mock(Aggregations.class);
 
+        // mocking the Terms Class
         Terms sourceaggs = mock(Terms.class);
-        when(searchResponse.getAggregations()).thenReturn(aggs);
+
+        // mocks of type Terms.Bucket and stubbing accordingly
         Terms.Bucket bucket1 = mock(Terms.Bucket.class);
         when(bucket1.getKeyAsString()).thenReturn("source1");
         when(bucket1.getDocCount()).thenReturn(10L);
         Terms.Bucket bucket2 = mock(Terms.Bucket.class);
         when(bucket2.getKeyAsString()).thenReturn("source2");
         when(bucket2.getDocCount()).thenReturn(20L);
+
+
         List<Terms.Bucket> terms= new ArrayList<Terms.Bucket>();
         terms.add(bucket1);
         terms.add(bucket2);
         List<Terms.Bucket> buckets = List.of(bucket1, bucket2);
+
+
+        //return list of mocked buckets
         doAnswer(invocation -> {
             return buckets;
         }).when(sourceaggs).getBuckets();
+
+        // return sourceaggs of type Terms when requested
         when(aggs.get("sources")).thenReturn(sourceaggs);
 
+        // return our mocked searchResponse when requested
         try {
             when(client.search( any(), any())).thenReturn(searchResponse);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
+        //return our mocked aggregation: aggs
+        when(searchResponse.getAggregations()).thenReturn(aggs);
 
+
+        // calling the method under test
         Map<String, Long> result = logService.groupBysource();
-//
+
+
+        //verifying whether specific methods of our mocked objects were called
         try {
             verify(client).search((SearchRequest) any(), any());
         } catch (IOException e) {
@@ -144,6 +159,8 @@ class LogServiceImpTest {
         }
 
         verify(searchResponse).getAggregations();
+
+        //assertions
         assertEquals(2, result.size());
         assertEquals(Long.valueOf(10L), result.get("source1"));
         assertEquals(Long.valueOf(20L), result.get("source2"));
@@ -151,31 +168,42 @@ class LogServiceImpTest {
     }
 
     @Test
-    public void ProjecttionTest(){
+    public void ProjectionTest(){
+
+        // Creating mock objects
         SearchResponse searchResponse = mock(SearchResponse.class);
-
         SearchHits searchHits = mock(SearchHits.class);
-
         SearchHit searchHit = mock(SearchHit.class);
 
+        // data would be in map format
         Map<String, Object> sourceAsMap = new HashMap<>();
         sourceAsMap.put("source", "source1");
         sourceAsMap.put("message", "message1");
 
+        // stubbing the mock behaviour
         when(searchResponse.getHits()).thenReturn(searchHits);
-
         when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
-
         when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
-
         try {
             when(client.search(any(), any())).thenReturn(searchResponse);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
+
+        // calling the method under test
         List<LogEntity> logs = logService.projectBySourceAndMessage();
 
+
+        //verifying whether specific methods of our mocked objects were called
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        verify(searchResponse).getHits();
+
+        //Assertions
         assertEquals(1, logs.size());
         assertEquals("source1", logs.get(0).getSource());
         assertEquals("message1", logs.get(0).getMessage());
@@ -185,14 +213,17 @@ class LogServiceImpTest {
 
     @Test
     public void filterByTimeTest(){
+
+        //Creating Mock objects
         SearchResponse searchResponse = mock(SearchResponse.class);
-
         SearchHits searchHits = mock(SearchHits.class);
-
         SearchHit searchHit = mock(SearchHit.class);
+
 
         String start = "2023-06-16T11:22:14";
         String end = "2024-06-16T11:22:14";
+
+        // Data that should get returned
         Map<String, Object> sourceAsMap = new HashMap<>();
         sourceAsMap.put("ID", "1");
         sourceAsMap.put("timestamp", "2023-06-16T17:52:14.189Z");
@@ -200,13 +231,10 @@ class LogServiceImpTest {
         sourceAsMap.put("source","source1");
         sourceAsMap.put("message","message1");
 
-
+       //stubbing the mocks
         when(searchResponse.getHits()).thenReturn(searchHits);
-
         when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
-
         when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
-
         try {
             when(client.search(any(), any())).thenReturn(searchResponse);
         } catch (IOException e) {
@@ -214,23 +242,34 @@ class LogServiceImpTest {
         }
 
 
-
+        //Call the method under test
         List<LogEntity> logs = logService.filterBytime(start, end);
 
+
+        //verifying whether specific methods of our mocked objects were called
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        verify(searchResponse).getHits();
+
+
+        //Assertions
         assertEquals(1, logs.size());
         assertEquals("1", logs.get(0).getID());
     }
 
-<<<<<<< HEAD
-=======
+
     @Test
     public void filterByTimeTestFail(){
+
+        //Creating the mocks
         SearchResponse searchResponse = mock(SearchResponse.class);
-
         SearchHits searchHits = mock(SearchHits.class);
-
         SearchHit searchHit = mock(SearchHit.class);
 
+        //Data that should be returned
         String start = "2023-06-16T11:22:14";
         String end = "2023-06-16T11:23:14";
         String now= "2024-06-16T11:22:14";
@@ -238,113 +277,134 @@ class LogServiceImpTest {
         sourceAsMap.put("ID", "1");
         sourceAsMap.put("timestamp", "2023-06-16T12:22:15.189Z");
         sourceAsMap.put("date",LocalDate.now());
-
         sourceAsMap.put("source","source1");
         sourceAsMap.put("message","message1");
 
-
+        //stubbing the mcoks
         when(searchResponse.getHits()).thenReturn(searchHits);
-
         when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
-
         when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
-
         try {
             when(client.search(any(), any())).thenReturn(searchResponse);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-
-
+        //Call the method under test
         List<LogEntity> logs = logService.filterBytime(start, end);
 
-        assertEquals(1, logs.size());
-   Date ts= logs.get(0).getTimestamp();
+
+        //verifying whether specific methods of our mocked objects were called
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        verify(searchResponse).getHits();
+
+
+        Date ts= logs.get(0).getTimestamp();
         System.out.println(ts);
         Instant instant = ts.toInstant();
 
-// Convert Instant to LocalDateTime
+       // Convert Instant to LocalDateTime
         LocalDateTime tsp = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
 
         boolean isAfter = tsp.isAfter(LocalDateTime.parse(start));
         boolean isBefore = tsp.isBefore(LocalDateTime.parse(end));
+
+        //Assertions
+        assertEquals(1, logs.size());
         assertFalse(isBefore && isAfter);
 
     }
->>>>>>> 58dc878 (dynamic termsfilter)
 
     @Test
     public void filterByTermsTest()
     {
-
+        // Creating mock objects
         SearchResponse searchResponse = mock(SearchResponse.class);
-
         SearchHits searchHits = mock(SearchHits.class);
-
         SearchHit searchHit = mock(SearchHit.class);
 
+        //Data that would be returned
         Map<String, Object> sourceAsMap = new HashMap<>();
         sourceAsMap.put("ID", "1");
-<<<<<<< HEAD
-        sourceAsMap.put("timestamp", LocalDateTime.now());
-=======
-        sourceAsMap.put("timestamp", "2023-06-16T17:52:14.189Z");
 
+        sourceAsMap.put("timestamp", "2023-06-16T17:52:14.189Z");
         sourceAsMap.put("date", LocalDate.now());
         sourceAsMap.put("source", "standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7");
         sourceAsMap.put("message", "message1");
 
-
+        //stubbing the mocks
         when(searchResponse.getHits()).thenReturn(searchHits);
-
         when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
-
         when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
-
         try {
             when(client.search(any(), any())).thenReturn(searchResponse);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
+
+
+        //call the method under test
         List<LogEntity> logs = logService.filterByterms();
+
+
+        //verifying whether specific methods of our mocked objects were called
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        verify(searchResponse).getHits();
+
+        //Assertions
         assertEquals("standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7", logs.get(0).getSource());
     }
 
     @Test
     public void filterByTermsTestFail()
     {
-
+        // Create Mock objects
         SearchResponse searchResponse = mock(SearchResponse.class);
-
         SearchHits searchHits = mock(SearchHits.class);
-
         SearchHit searchHit = mock(SearchHit.class);
 
+        // Data as Map
         Map<String, Object> sourceAsMap = new HashMap<>();
         sourceAsMap.put("ID", "1");
         sourceAsMap.put("timestamp", "2023-06-16T17:52:14.189Z");
-        sourceAsMap.put("date",LocalDate.now());
->>>>>>> 58dc878 (dynamic termsfilter)
+
         sourceAsMap.put("source", "source1");
         sourceAsMap.put("message", "message1");
 
-
+        //stub the mcoks
         when(searchResponse.getHits()).thenReturn(searchHits);
-
         when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
-
         when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
-
         try {
             when(client.search(any(), any())).thenReturn(searchResponse);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
+        //call the method under test
         List<LogEntity> logs = logService.filterByterms();
         assertEquals("source1", logs.get(0).getSource());
+
+        //verifying whether specific methods of our mocked objects were called
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        verify(searchResponse).getHits();
+
+
+        //Assertions
+        assertNotEquals("standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7", logs.get(0).getSource());
     }
 
 //    @Test
@@ -398,17 +458,24 @@ class LogServiceImpTest {
 
     @Test
     public void testSearchUsingPage() {
+        // creating pages
         Page<LogEntity> page1 = createLogEntityPage(1, 1000, true);
         Page<LogEntity> page2 = createLogEntityPage(1001, 2000, false);
 
+        // stubbing findall function of logrepository to return desired pages
         when(logRepository.findAll(any(Pageable.class))).thenReturn(page1, page2);
 
         List<LogEntity> expectedLogs = new ArrayList<>();
         expectedLogs.addAll(page1.getContent());
         expectedLogs.addAll(page2.getContent());
 
+        // Call the function under test
         List<LogEntity> actualLogs = logService.searchUsingPage();
 
+        // verify
+        verify(logRepository,times(2)).findAll(any(Pageable.class));
+
+        //Assertions
         assertEquals(expectedLogs.size(), actualLogs.size());
         assertEquals(expectedLogs, actualLogs);
     }
@@ -431,14 +498,29 @@ class LogServiceImpTest {
 
     @Test
     public void searchUsingScrollTest(){
+        // Create Mock objects
         SearchResponse searchResponse1 = mock(SearchResponse.class);
         SearchResponse searchResponse2 = mock(SearchResponse.class);
         SearchHits searchHits1 = mock(SearchHits.class);
         SearchHits searchHits2 = mock(SearchHits.class);
         SearchHit searchHit1 = mock(SearchHit.class);
         SearchHit searchHit2 = mock(SearchHit.class);
+
+        //data in form of map
         Map<String, Object> sourceAsMap1 = new HashMap<>();
         Map<String, Object> sourceAsMap2 = new HashMap<>();
+        sourceAsMap1.put("source", "source1");
+        sourceAsMap1.put("message", "message1");
+        sourceAsMap1.put("timestamp", "2023-06-16T17:52:14.692Z");
+        sourceAsMap1.put("date", "2023-06-16");
+
+        sourceAsMap2.put("source", "source2");
+        sourceAsMap2.put("message", "message2");
+        sourceAsMap2.put("timestamp", "2023-06-16T17:52:14.692Z");
+        sourceAsMap2.put("date", "2023-06-16");
+
+
+
         Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
 
         SearchRequest searchRequest = new SearchRequest();
@@ -447,6 +529,8 @@ class LogServiceImpTest {
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.matchAllQuery());
         searchSourceBuilder.size(100);
+
+        // stubbing the mocks
         searchRequest.source(searchSourceBuilder);
         try {
             when(client.search(eq(searchRequest), eq(RequestOptions.DEFAULT))).thenReturn(searchResponse1);
@@ -458,7 +542,6 @@ class LogServiceImpTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         when(searchResponse1.getScrollId()).thenReturn("scrollId1");
         when(searchResponse1.getHits()).thenReturn(searchHits1);
         when(searchResponse2.getScrollId()).thenReturn("scrollId2");
@@ -466,7 +549,6 @@ class LogServiceImpTest {
         when(searchHits1.getHits()).thenReturn(new SearchHit[] { searchHit1 });
         when(searchHits2.getHits()).thenReturn(new SearchHit[] { });
 
-        when(searchHits1.iterator()).thenReturn(List.of(searchHit1).iterator());
 
         sourceAsMap1.put("source", "source1");
         sourceAsMap1.put("message", "message1");
@@ -478,22 +560,43 @@ class LogServiceImpTest {
         sourceAsMap2.put("timestamp", "2023-06-16T17:52:14.692Z");
         sourceAsMap2.put("date", "2023-06-16");
 
+        when(searchHits1.iterator()).thenReturn(List.of(searchHit1,searchHit2).iterator());
         when(searchHit1.getSourceAsMap()).thenReturn(sourceAsMap1);
 
+
+        // call the method under test
         List<LogEntity> logs = logService.searchUsingScroll();
 
+
+        //expected response
         List<LogEntity> expectedLogs = new ArrayList<>();
         LogEntity log1 = new LogEntity();
         log1.setID("1");
         log1.setSource("source1");
         log1.setMessage("message1");
         expectedLogs.add(log1);
+
+        LogEntity log2 = new LogEntity();
+        log2.setID("2");
+        log2.setSource("source2");
+        log2.setMessage("message2");
+        expectedLogs.add(log2);
+
+        //verifying whether specific methods of our mocked objects were called
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        verify(searchResponse1).getHits();
+
+
+        //Assertions
         assertEquals(expectedLogs.size(),logs.size());
      for(int i=0;i<expectedLogs.size();i++){
          LogEntity logg1=expectedLogs.get(i);
          LogEntity logg2=logs.get(i);
          assertEquals(logg1.getMessage(),logg2.getMessage());
-//         assertEquals(logg1.getID(),logg2.getID());
          assertEquals(logg1.getSource(),logg2.getSource());
 
      }
@@ -502,11 +605,14 @@ class LogServiceImpTest {
 
     @Test
     public void tabularAggTest(){
+
+        //Create Mocks
         SearchResponse searchResponse = mock(SearchResponse.class);
         Aggregations aggs = mock(Aggregations.class);
-
         Terms sourceaggs = mock(Terms.class);
-        when(searchResponse.getAggregations()).thenReturn(aggs);
+
+
+        // mock data
         Terms.Bucket bucket1 = mock(Terms.Bucket.class);
         when(bucket1.getKeyAsString()).thenReturn("source1");
         Terms.Bucket bucket2 = mock(Terms.Bucket.class);
@@ -515,36 +621,38 @@ class LogServiceImpTest {
         terms.add(bucket1);
         terms.add(bucket2);
         List<Terms.Bucket> buckets = List.of(bucket1, bucket2);
-        Cardinality uniqueTimestamps = mock(Cardinality.class);
-        when( uniqueTimestamps.getValue()).thenReturn(100L);
 
+        Cardinality uniqueTimestamps = mock(Cardinality.class);
+
+
+        //stubbing the mocks
+        when( uniqueTimestamps.getValue()).thenReturn(100L);
         doAnswer(invocation -> {
             return buckets;
         }).when(sourceaggs).getBuckets();
-
+        when(searchResponse.getAggregations()).thenReturn(aggs);
         when(aggs.get("timestamps_per_source")).thenReturn(sourceaggs);
         when(bucket1.getAggregations()).thenReturn(aggs);
         when(bucket2.getAggregations()).thenReturn(aggs);
         when(aggs.get("unique_timestamps")).thenReturn(uniqueTimestamps);
-//        when(bucket1.getAggregations().get("unique_timestamps")).thenReturn(uniqueTimestamps);
-//        when(bucket2.getAggregations().get("unique_timestamps")).thenReturn(uniqueTimestamps);
-
         try {
             when(client.search( any(), any())).thenReturn(searchResponse);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-
+       // call the method under test
         Map<String, Long> result = logService.tabularAggregation();
-//
+/// verify
         try {
             verify(client).search((SearchRequest) any(), any());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
         verify(searchResponse).getAggregations();
+
+
+        //Assertions
         assertEquals(2, result.size());
         assertEquals(Long.valueOf(100L), result.get("source1"));
         assertEquals(Long.valueOf(100L), result.get("source2"));
@@ -554,22 +662,23 @@ class LogServiceImpTest {
 
     @Test
     public void nestedAggTest(){
+
+        // create mock objects
         SearchResponse searchResponse = mock(SearchResponse.class);
         Aggregations aggs = mock(Aggregations.class);
-
         Terms sourcesAgg = mock(Terms.class);
-        List<Terms.Bucket> sourcesBuckets = new ArrayList<>();
 
+        List<Terms.Bucket> sourcesBuckets = new ArrayList<>();
         Terms.Bucket sourcesBucket1 = mock(Terms.Bucket.class);
 
         when(sourcesBucket1.getKeyAsString()).thenReturn("source1");
-
         Terms.Bucket sourcesBucket2 = mock(Terms.Bucket.class);
+
+
+        // stub the mock behaviour
         when(sourcesBucket2.getKeyAsString()).thenReturn("source2");
         sourcesBuckets.add(sourcesBucket1);
         sourcesBuckets.add(sourcesBucket2);
-
-
         doAnswer(invocation -> {
             return sourcesBuckets;
         }).when(sourcesAgg).getBuckets();
@@ -614,8 +723,21 @@ class LogServiceImpTest {
         when(aggs.get("unique_dates")).thenReturn(uniqueIds);
 
 
+        // Call the method under test
         Map<String, Long> mp=logService.nestedAggregation();
 
+
+        //verify
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        verify(sourcesAgg).getBuckets();
+        verify(timestampsAgg,times(2)).getBuckets();
+
+
+        //Assertions
         assertEquals(mp.get("source1-2019-01-01"),100L);
         assertEquals(mp.get("source2-2019-01-02"),100L);
 
@@ -625,11 +747,13 @@ class LogServiceImpTest {
     public void cardinalityaggTest(){
 
         // Mock search response
+        // create mock objects
         SearchResponse searchResponse = mock(SearchResponse.class);
         Cardinality cardinalityAgg = mock(Cardinality.class);
         Aggregations aggs = mock(Aggregations.class);
 
         // Stub cardinality value
+        //stub the mocks
         when(cardinalityAgg.getValue()).thenReturn(100L);
 when(searchResponse.getAggregations()).thenReturn(aggs);
         when(aggs.get("unique_" + "field"))
@@ -641,21 +765,37 @@ when(searchResponse.getAggregations()).thenReturn(aggs);
         }
 
         // Call function under test
-        long cardinality = logService.cardinalityAggs("field");
 
         // Assertions
+        // call the method under test
+        long cardinality = logService.cardinalityAggs("field");
+
+
+        //verify
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        verify(cardinalityAgg).getValue();
+
+        //Assertions
         assertEquals(100L, cardinality);
     }
 
 
     @Test
     public void testFilterByTermsDynamic() throws Exception {
+
+        //expected data
         String field = "source";
         String[] terms = { "app-1", "app-2" };
         String timestamp = "2023-06-30T12:34:56.789Z";
         String source = "app-1";
         String message = "message";
         Map<String, Object> sourceAsMap = Map.of("ID", "1", "timestamp", timestamp, "date", "2023-06-30", "source", source, "message", message);
+
+        // create mock objects and stub them
         SearchHit hit = mock(SearchHit.class);
         when(hit.getSourceAsMap()).thenReturn(sourceAsMap);
         SearchHits hits = mock(SearchHits.class);
@@ -664,8 +804,10 @@ when(searchResponse.getAggregations()).thenReturn(aggs);
         when(response.getHits()).thenReturn(hits);
         when(client.search(any(SearchRequest.class), any(RequestOptions.class))).thenReturn(response);
 
+        // call method under test
         List<LogEntity> logs = logService.filterByTermsDynamic(field, terms);
 
+        // assertions
         assertEquals(1, logs.size());
         LogEntity log = logs.get(0);
         assertEquals("1", log.getID());
@@ -677,17 +819,19 @@ when(searchResponse.getAggregations()).thenReturn(aggs);
         Date expectedTimestamp = formatter.parse(timestamp);
         assertEquals(expectedTimestamp, log.getTimestamp());
 
-//        SearchRequest expectedRequest = new SearchRequest();
-//        expectedRequest.indices("loganalyzer");
-//        TermsQueryBuilder termsQuery = QueryBuilders.termsQuery(field, terms);
-//        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder().query(termsQuery);
-//        expectedRequest.source(sourceBuilder);
-//        verify(client).search(eq(expectedRequest), any(RequestOptions.class));
+        //verify
+        SearchRequest expectedRequest = new SearchRequest();
+        expectedRequest.indices("loganalyzer");
+        TermsQueryBuilder termsQuery = QueryBuilders.termsQuery(field, terms);
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder().query(termsQuery);
+        expectedRequest.source(sourceBuilder);
+        verify(client).search(eq(expectedRequest), any(RequestOptions.class));
     }
 
     @Test
     public void testGroupByDynamic() throws IOException {
 
+        //create mock objects  abd stub them
         SearchResponse searchResponse = mock(SearchResponse.class);
         Aggregations aggs = mock(Aggregations.class);
         Terms sourceaggs = mock(Terms.class);
@@ -714,8 +858,11 @@ when(searchResponse.getAggregations()).thenReturn(aggs);
         }
 
 
+        // call methodunder test
         Map<String, Long> result = logService.groupByDynamic("field");
 //
+
+        //verify
         try {
             verify(client).search((SearchRequest) any(), any());
         } catch (IOException e) {
@@ -723,6 +870,8 @@ when(searchResponse.getAggregations()).thenReturn(aggs);
         }
 
         verify(searchResponse).getAggregations();
+
+        //Assertions
         assertEquals(2, result.size());
         assertEquals(Long.valueOf(10L), result.get("field1"));
         assertEquals(Long.valueOf(20L), result.get("field2"));
@@ -732,12 +881,13 @@ when(searchResponse.getAggregations()).thenReturn(aggs);
 
     @Test
     public void projectiondynamictest(){
+
+        //create mcok objects  and stub them
         SearchResponse searchResponse = mock(SearchResponse.class);
-
         SearchHits searchHits = mock(SearchHits.class);
-
         SearchHit searchHit = mock(SearchHit.class);
 
+        //data
         Map<String, Object> sourceAsMap = new HashMap<>();
         sourceAsMap.put("source", "source1");
         sourceAsMap.put("message", "message1");
@@ -756,8 +906,20 @@ when(searchResponse.getAggregations()).thenReturn(aggs);
             throw new RuntimeException(e);
         }
 
+        // call the method under  test
         List<LogEntity> logs = logService.projectByDynamic("source","message","timestamp","date");
 
+
+
+        //verifying whether specific methods of our mocked objects were called
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        verify(searchResponse).getHits();
+
+        //Assertions
         assertEquals(1, logs.size());
         assertEquals("source1", logs.get(0).getSource());
         assertEquals("message1", logs.get(0).getMessage());

@@ -49,7 +49,7 @@ public class LogAnalyzerApplication {
 //		obj.search();
 //		System.out.println(obj.cardinalityAggs("date"));
 ////		System.out.println(obj.searchUsingScroll().size());
-	obj.projectByDynamic("source","date");
+//	obj.projectByDynamic("source","date");
 //		List<LogEntity> f=obj.searhUsingScroll();
 // for(LogEntity ff:f){
 //	 System.out.println(ff.toString());
