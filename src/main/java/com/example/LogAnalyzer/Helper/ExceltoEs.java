@@ -47,7 +47,7 @@ public class ExceltoEs {
 
             switch (cellIdx) {
                 case 0:
-                     // cell should contain some date time value
+                    // cell should contain some date time value
                     if (DateUtil.isCellDateFormatted(currentCell)) {
                         Date timestamp = currentCell.getDateCellValue();
                         logdata.setTimestamp(timestamp);
@@ -135,9 +135,6 @@ public class ExceltoEs {
         }
 
     }
-
-
-
 
     //takes a list of LogEntities and stores them in es
     public List<LogEntity> WriteToEs(LogRepository logRepository, List<LogEntity> logs) {

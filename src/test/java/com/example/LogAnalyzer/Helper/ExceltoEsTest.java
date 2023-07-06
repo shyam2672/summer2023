@@ -16,6 +16,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 //@SpringBootTest
@@ -24,7 +25,7 @@ import static org.mockito.Mockito.when;
 class ExceltoEsTest {
 
 
-//    @Autowired
+    //    @Autowired
     @InjectMocks
     private ExceltoEs helper=new ExceltoEs();
 
@@ -33,11 +34,11 @@ class ExceltoEsTest {
 
     @Test
     public  void ReadTest(){
-         assertDoesNotThrow(
-                 ()->{
-                      helper.ReadFromExcel();
-                 }
-         );
+        assertDoesNotThrow(
+                ()->{
+                    helper.ReadFromExcel();
+                }
+        );
     }
 
     @Test
@@ -65,9 +66,11 @@ class ExceltoEsTest {
 
         logs.add(log1);
         logs.add(log2);
-            when(logRepository.saveAll(anyList())).thenReturn(logs);
+//            when(logRepository.saveAll(anyList())).thenReturn(logs);
+        when(logRepository.save(eq(log1))).thenReturn(log1);
+        when(logRepository.save(eq(log2))).thenReturn(log2);
 
-          assertEquals(logs,helper.WriteToEs(logRepository,logs));
+        assertEquals(logs,helper.WriteToEs(logRepository,logs));
 
 
     }

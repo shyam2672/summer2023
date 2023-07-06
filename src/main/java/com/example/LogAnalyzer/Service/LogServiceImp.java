@@ -43,7 +43,6 @@ import java.util.*;
 public class LogServiceImp implements LogService {
 
 
-//    @Autowired
     private RestHighLevelClient client;
     private LogRepository logRepository;
 
@@ -76,7 +75,6 @@ public class LogServiceImp implements LogService {
     @Override
     public List<LogEntity> search() {
 
-
         Iterable<LogEntity> logs = logRepository.findAll();
         List<LogEntity> loggs = new ArrayList<>();
         for (LogEntity log : logs) {
@@ -90,7 +88,6 @@ public class LogServiceImp implements LogService {
     @Override
     public List<LogEntity> searchUsingPage() {
         Page<LogEntity> page = logRepository.findAll(Pageable.ofSize(1000));
-
         List<LogEntity> logs = new ArrayList<>();
         while (page.hasNext()) {
             logs.addAll(page.getContent());
@@ -160,7 +157,6 @@ public class LogServiceImp implements LogService {
                 logs.add(logg);
 
             }
-
 
             try {
                 searchResponse = client.scroll(new SearchScrollRequest(scrollId).scroll(scroll), RequestOptions.DEFAULT);
@@ -314,7 +310,7 @@ public class LogServiceImp implements LogService {
         return mp;
     }
 
-// an example of porjection query
+    // an example of porjection query
     @Override
     public List<LogEntity> projectBySourceAndMessage() {
         QueryBuilder query = QueryBuilders.matchAllQuery();
@@ -361,7 +357,7 @@ public class LogServiceImp implements LogService {
         return logs;
     }
 
-//fitler docs in given time range
+    //fitler docs in given time range
     @Override
     public List<LogEntity> filterBytime(String start, String end) {
         RangeQueryBuilder query = new RangeQueryBuilder("timestamp")
@@ -475,7 +471,7 @@ public class LogServiceImp implements LogService {
 
         return logs;
     }
-//generic filter function wth any fied and any number of terms
+    //generic filter function wth any fied and any number of terms
     @Override
     public List<LogEntity> filterByTermsDynamic(String field, String... terms) throws ParseException {
 
@@ -532,7 +528,7 @@ public class LogServiceImp implements LogService {
         System.out.println(logs.size());
         return logs;
     }
-//groupBys on given field
+    //groupBys on given field
     @Override
     public Map<String, Long> groupByDynamic(String field) {
 

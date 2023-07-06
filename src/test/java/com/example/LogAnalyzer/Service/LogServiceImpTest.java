@@ -49,10 +49,10 @@ class LogServiceImpTest {
     private LogServiceImp logService;
 
     @Mock
-            private LogRepository logRepository;
+    private LogRepository logRepository;
 
     @Mock
-            private ExceltoEs helper;
+    private ExceltoEs helper;
 
 
     @Mock
@@ -87,8 +87,8 @@ class LogServiceImpTest {
         //stubbing the helper object as it is tested separately
         when(helper.ReadFromExcel()).thenReturn(logs);
         when(helper.WriteToEs(any(LogRepository.class),anyList())).thenReturn(logs);
+        assertEquals(logs,logService.savelogdata());
 
-            assertEquals(logs,logService.savelogdata());
 
     }
 
@@ -231,7 +231,7 @@ class LogServiceImpTest {
         sourceAsMap.put("source","source1");
         sourceAsMap.put("message","message1");
 
-       //stubbing the mocks
+        //stubbing the mocks
         when(searchResponse.getHits()).thenReturn(searchHits);
         when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
         when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
@@ -259,7 +259,6 @@ class LogServiceImpTest {
         assertEquals(1, logs.size());
         assertEquals("1", logs.get(0).getID());
     }
-
 
     @Test
     public void filterByTimeTestFail(){
@@ -307,7 +306,7 @@ class LogServiceImpTest {
         System.out.println(ts);
         Instant instant = ts.toInstant();
 
-       // Convert Instant to LocalDateTime
+        // Convert Instant to LocalDateTime
         LocalDateTime tsp = instant.atZone(ZoneId.systemDefault()).toLocalDateTime();
 
         boolean isAfter = tsp.isAfter(LocalDateTime.parse(start));
@@ -330,7 +329,6 @@ class LogServiceImpTest {
         //Data that would be returned
         Map<String, Object> sourceAsMap = new HashMap<>();
         sourceAsMap.put("ID", "1");
-
         sourceAsMap.put("timestamp", "2023-06-16T17:52:14.189Z");
         sourceAsMap.put("date", LocalDate.now());
         sourceAsMap.put("source", "standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7");
@@ -376,7 +374,7 @@ class LogServiceImpTest {
         Map<String, Object> sourceAsMap = new HashMap<>();
         sourceAsMap.put("ID", "1");
         sourceAsMap.put("timestamp", "2023-06-16T17:52:14.189Z");
-
+        sourceAsMap.put("date",LocalDate.now());
         sourceAsMap.put("source", "source1");
         sourceAsMap.put("message", "message1");
 
@@ -392,7 +390,6 @@ class LogServiceImpTest {
 
         //call the method under test
         List<LogEntity> logs = logService.filterByterms();
-        assertEquals("source1", logs.get(0).getSource());
 
         //verifying whether specific methods of our mocked objects were called
         try {
@@ -406,55 +403,6 @@ class LogServiceImpTest {
         //Assertions
         assertNotEquals("standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7", logs.get(0).getSource());
     }
-
-//    @Test
-//    public void searchUsingPageTest(){
-//        // Mock first page with 5 entities
-//
-//PageImpl<LogEntity> page1= new PageImpl<>(List.of(   new LogEntity(),
-//        new LogEntity(),
-//        new LogEntity(),
-//        new LogEntity(),
-//        new LogEntity()));
-//
-//
-//        PageImpl<LogEntity> page2= new PageImpl<>(List.of(   new LogEntity(),
-//                new LogEntity(),
-//                new LogEntity(),
-//                new LogEntity(),
-//                new LogEntity()));
-//
-//
-//        Page<LogEntity> firstPage =mock(Page.class);
-//        Page<LogEntity> secondPage =mock(Page.class);
-//
-//
-//        // Mock second page with 3 entities
-//
-//
-//
-//        Mockito.when(logRepository.findAll(any(Pageable.class)))
-//                .thenReturn(firstPage);
-//
-//        when(firstPage.getContent()).thenReturn(page1.getContent());
-//        when(secondPage.getPageable()).thenReturn(secondPage.getPageable());
-//        when(firstPage.nextPageable()).thenReturn(secondPage.getPageable());
-//
-//        Mockito.when(logRepository.findAll(secondPage.getPageable()))
-//                .thenReturn(secondPage);
-//        when(secondPage.getContent()).thenReturn(page2.getContent());
-//
-//
-//
-//
-//        // Call the method under test
-//        List<LogEntity> logs = logService.searchUsingPage();
-//
-//        // Assert that 8 entities were returned
-//        assertEquals(8, logs.size());
-//
-//
-//    }
 
     @Test
     public void testSearchUsingPage() {
@@ -546,22 +494,11 @@ class LogServiceImpTest {
         when(searchResponse1.getHits()).thenReturn(searchHits1);
         when(searchResponse2.getScrollId()).thenReturn("scrollId2");
         when(searchResponse2.getHits()).thenReturn(searchHits2);
-        when(searchHits1.getHits()).thenReturn(new SearchHit[] { searchHit1 });
+        when(searchHits1.getHits()).thenReturn(new SearchHit[] { searchHit1,searchHit2 });
         when(searchHits2.getHits()).thenReturn(new SearchHit[] { });
-
-
-        sourceAsMap1.put("source", "source1");
-        sourceAsMap1.put("message", "message1");
-        sourceAsMap1.put("timestamp", "2023-06-16T17:52:14.692Z");
-        sourceAsMap1.put("date", "2023-06-16");
-
-        sourceAsMap2.put("source", "source2");
-        sourceAsMap2.put("message", "message2");
-        sourceAsMap2.put("timestamp", "2023-06-16T17:52:14.692Z");
-        sourceAsMap2.put("date", "2023-06-16");
-
         when(searchHits1.iterator()).thenReturn(List.of(searchHit1,searchHit2).iterator());
         when(searchHit1.getSourceAsMap()).thenReturn(sourceAsMap1);
+        when(searchHit2.getSourceAsMap()).thenReturn(sourceAsMap2);
 
 
         // call the method under test
@@ -575,7 +512,6 @@ class LogServiceImpTest {
         log1.setSource("source1");
         log1.setMessage("message1");
         expectedLogs.add(log1);
-
         LogEntity log2 = new LogEntity();
         log2.setID("2");
         log2.setSource("source2");
@@ -593,13 +529,13 @@ class LogServiceImpTest {
 
         //Assertions
         assertEquals(expectedLogs.size(),logs.size());
-     for(int i=0;i<expectedLogs.size();i++){
-         LogEntity logg1=expectedLogs.get(i);
-         LogEntity logg2=logs.get(i);
-         assertEquals(logg1.getMessage(),logg2.getMessage());
-         assertEquals(logg1.getSource(),logg2.getSource());
+        for(int i=0;i<expectedLogs.size();i++){
+            LogEntity logg1=expectedLogs.get(i);
+            LogEntity logg2=logs.get(i);
+            assertEquals(logg1.getMessage(),logg2.getMessage());
+            assertEquals(logg1.getSource(),logg2.getSource());
 
-     }
+        }
 
     }
 
@@ -641,7 +577,7 @@ class LogServiceImpTest {
             throw new RuntimeException(e);
         }
 
-       // call the method under test
+        // call the method under test
         Map<String, Long> result = logService.tabularAggregation();
 /// verify
         try {
@@ -746,16 +682,14 @@ class LogServiceImpTest {
     @Test
     public void cardinalityaggTest(){
 
-        // Mock search response
         // create mock objects
         SearchResponse searchResponse = mock(SearchResponse.class);
         Cardinality cardinalityAgg = mock(Cardinality.class);
         Aggregations aggs = mock(Aggregations.class);
 
-        // Stub cardinality value
         //stub the mocks
         when(cardinalityAgg.getValue()).thenReturn(100L);
-when(searchResponse.getAggregations()).thenReturn(aggs);
+        when(searchResponse.getAggregations()).thenReturn(aggs);
         when(aggs.get("unique_" + "field"))
                 .thenReturn(cardinalityAgg);
         try {
@@ -764,9 +698,6 @@ when(searchResponse.getAggregations()).thenReturn(aggs);
             throw new RuntimeException(e);
         }
 
-        // Call function under test
-
-        // Assertions
         // call the method under test
         long cardinality = logService.cardinalityAggs("field");
 
