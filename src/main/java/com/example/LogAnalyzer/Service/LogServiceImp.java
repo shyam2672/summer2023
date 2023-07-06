@@ -75,6 +75,7 @@ public class LogServiceImp implements LogService {
     @Override
     public List<LogEntity> search() {
 
+
         Iterable<LogEntity> logs = logRepository.findAll();
         List<LogEntity> loggs = new ArrayList<>();
         for (LogEntity log : logs) {
@@ -323,6 +324,7 @@ public class LogServiceImp implements LogService {
         String[] includes = {"source", "message"};
         String[] excludes = null;
         searchSource.fetchSource(includes, excludes);
+
 
         SearchRequest searchRequest = new SearchRequest("loganalyzer");
         searchRequest.source(searchSource);
