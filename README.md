@@ -170,6 +170,11 @@ Spring Boot, Java, ElasticSearch, Thymeleaf, Junit, MockMvc
 #### Search results with time filter
 <img width="1792" alt="Screenshot 2023-07-05 at 12 58 50 PM" src="https://github.com/shyam2672/summer2023/assets/91652089/e6cd5c36-9b0f-49e7-b600-452ebab6bd52">
 
+## Class Diagram
+
+![uml loganalyzer](https://github.com/shyam2672/summer2023/assets/91652089/87516ea5-40d8-4231-bd62-4ebb1594f1d4)
+
+
 ## source code directory structure
 <img width="431" alt="Screenshot 2023-07-07 at 2 35 57 PM" src="https://github.com/shyam2672/summer2023/assets/91652089/c08ae918-928d-4b8d-ab0d-beab68b85f84">
 
