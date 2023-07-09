@@ -174,6 +174,11 @@ Spring Boot, Java, ElasticSearch, Thymeleaf, Junit, MockMvc
 
 ![uml loganalyzer](https://github.com/shyam2672/summer2023/assets/91652089/87516ea5-40d8-4231-bd62-4ebb1594f1d4)
 
+## Class dependencies
+
+![class dependecies](https://github.com/shyam2672/summer2023/assets/91652089/68a4f3dd-46f5-48c9-bc4f-2662cdd91f27)
+
+
 
 ## source code directory structure
 <img width="431" alt="Screenshot 2023-07-07 at 2 35 57 PM" src="https://github.com/shyam2672/summer2023/assets/91652089/c08ae918-928d-4b8d-ab0d-beab68b85f84">
