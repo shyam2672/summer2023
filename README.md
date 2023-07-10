@@ -177,36 +177,36 @@ Spring Boot, Java, ElasticSearch, Thymeleaf, Junit, MockMvc
 
 
 
-## Get Cardinality
+#### Get Cardinality
 
 <img width="392" alt="image" src="https://github.com/shyam2672/summer2023/assets/91652089/cefe5209-3057-4ad6-b438-1f2a777bbb01">
 
-## Filter data by terms
+#### Filter data by terms
 
 <img width="449" alt="image" src="https://github.com/shyam2672/summer2023/assets/91652089/ff16694a-f94e-42f2-82a8-c12f11c4d66f">
 
-## Project only certain feilds
+#### Project only certain feilds
 
 <img width="336" alt="image" src="https://github.com/shyam2672/summer2023/assets/91652089/899a9e56-de9e-4201-84fa-303331f1376f">
 
 
-## Class Diagram
+#### Class Diagram
 
 ![uml loganalyzer](https://github.com/shyam2672/summer2023/assets/91652089/87516ea5-40d8-4231-bd62-4ebb1594f1d4)
 
-## Class dependencies
+#### Class dependencies
 
 ![class dependecies](https://github.com/shyam2672/summer2023/assets/91652089/68a4f3dd-46f5-48c9-bc4f-2662cdd91f27)
 
 
-## source code directory structure
+#### source code directory structure
 <img width="431" alt="Screenshot 2023-07-07 at 2 35 57 PM" src="https://github.com/shyam2672/summer2023/assets/91652089/c08ae918-928d-4b8d-ab0d-beab68b85f84">
 
-## Document Structure
+#### Document Structure
   <img width="613" alt="image" src="https://github.com/shyam2672/summer2023/assets/91652089/e03884df-0580-479e-8913-9fd2f988b17f">
 
   
-## Index Mapping
+#### Index Mapping
 <img width="512" alt="image" src="https://github.com/shyam2672/summer2023/assets/91652089/bfba700a-f827-471f-945c-e62f9f5e4d75">
   
 
