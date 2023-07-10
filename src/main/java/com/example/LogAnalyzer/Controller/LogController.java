@@ -2,9 +2,7 @@ package com.example.LogAnalyzer.Controller;
 
 import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Service.LogService;
-import org.apache.juli.logging.Log;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -100,9 +98,9 @@ public class LogController {
 
 
     @PostMapping("/projectBy")
-    public List<LogEntity> projectby(@RequestBody Map<String, Object> requestBody){
+    public List<Map<String, Object>> projectby(@RequestBody Map<String, Object> requestBody){
         List<String> terms = (List<String>) requestBody.get("terms");
-        List<LogEntity> logs = service.projectByDynamic(terms.toArray(new String[0]));
+        List<Map<String, Object>> logs = service.projectByDynamic(terms.toArray(new String[0]));
         return logs;
 
     }

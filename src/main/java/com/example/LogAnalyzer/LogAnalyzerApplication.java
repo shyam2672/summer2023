@@ -29,21 +29,21 @@ public class LogAnalyzerApplication {
 		ApplicationContext context=SpringApplication.run(LogAnalyzerApplication.class, args);
 
 
-  LogService obj=context.getBean(LogService.class);
+//  LogService obj=context.getBean(LogService.class);
 //
-//// List<LogEntity> f= obj.savelogdata();
+// List<LogEntity> f= obj.searchUsingScroll();
 //		String start = "2023-06-16T17:52:14.691Z";
 //		String end = "2023-06-16T17:52:14.692Z";
 //		System.out.println(obj.filterByterms().size());
-
+//obj.tabularAggregation();
 //		obj.savelogdata();
 ////		 obj.filterBytime(LocalDateTime.parse(start),LocalDateTime.parse(end));
 ////obj.search();
-////		try {
-////			obj.filterByTermsDynamic("source","standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7","standalone-reporting-sch-slave-deployment-6d978d7d87-b9fvc");
-////		} catch (ParseException e) {
-////			throw new RuntimeException(e);
-////		}
+//		try {
+//			obj.filterByTermsDynamic("source","standalone-reporting-sch-slave-deployment-6d978d7d87-6fxv7","standalone-reporting-sch-slave-deployment-6d978d7d87-b9fvc");
+//		} catch (ParseException e) {
+//			throw new RuntimeException(e);
+//		}
 //		obj.projectByDynamic("source","message","date","_id");
 //		obj.filterByterms();
 //

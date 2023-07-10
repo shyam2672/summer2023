@@ -303,7 +303,7 @@ class LogControllerTest {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("terms", Arrays.asList("field1", "field2"));
 
-        List<LogEntity> expectedLogs = Arrays.asList(new LogEntity(), new LogEntity());
+        List<Map<String,Object>> expectedLogs = Arrays.asList(new HashMap<>(),new HashMap<>());
         when(logService.projectByDynamic("field1", "field2")).thenReturn(expectedLogs);
 
         try {

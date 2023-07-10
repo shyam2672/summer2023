@@ -225,7 +225,7 @@ class LogServiceImpTest {
 
         // Data that should get returned
         Map<String, Object> sourceAsMap = new HashMap<>();
-        sourceAsMap.put("ID", "1");
+//        sourceAsMap.put("ID", "1");
         sourceAsMap.put("timestamp", "2023-06-16T17:52:14.189Z");
         sourceAsMap.put("date",LocalDate.now());
         sourceAsMap.put("source","source1");
@@ -257,7 +257,7 @@ class LogServiceImpTest {
 
         //Assertions
         assertEquals(1, logs.size());
-        assertEquals("1", logs.get(0).getID());
+//        assertEquals("1", logs.get(0).getID());
     }
 
     @Test
@@ -724,7 +724,7 @@ class LogServiceImpTest {
         String timestamp = "2023-06-30T12:34:56.789Z";
         String source = "app-1";
         String message = "message";
-        Map<String, Object> sourceAsMap = Map.of("ID", "1", "timestamp", timestamp, "date", "2023-06-30", "source", source, "message", message);
+        Map<String, Object> sourceAsMap = Map.of( "timestamp", timestamp, "date", "2023-06-30", "source", source, "message", message);
 
         // create mock objects and stub them
         SearchHit hit = mock(SearchHit.class);
@@ -741,7 +741,6 @@ class LogServiceImpTest {
         // assertions
         assertEquals(1, logs.size());
         LogEntity log = logs.get(0);
-        assertEquals("1", log.getID());
         assertEquals(LocalDate.of(2023, 6, 30), log.getDate());
         assertEquals(source, log.getSource());
         assertEquals(message, log.getMessage());
@@ -829,6 +828,7 @@ class LogServiceImpTest {
         when(searchHits.iterator()).thenReturn(List.of(searchHit).iterator());
 
         when(searchHit.getSourceAsMap()).thenReturn(sourceAsMap);
+        when(searchHit.getId()).thenReturn("id");
 
         try {
             when(client.search(any(), any())).thenReturn(searchResponse);
@@ -837,7 +837,7 @@ class LogServiceImpTest {
         }
 
         // call the method under  test
-        List<LogEntity> logs = logService.projectByDynamic("source","message","timestamp","date");
+        List<Map<String, Object>> logs = logService.projectByDynamic("source","message","timestamp","date");
 
 
 
@@ -851,8 +851,8 @@ class LogServiceImpTest {
 
         //Assertions
         assertEquals(1, logs.size());
-        assertEquals("source1", logs.get(0).getSource());
-        assertEquals("message1", logs.get(0).getMessage());
+        assertEquals("source1", logs.get(0).get("source"));
+        assertEquals("message1", logs.get(0).get("message"));
 
     }
 

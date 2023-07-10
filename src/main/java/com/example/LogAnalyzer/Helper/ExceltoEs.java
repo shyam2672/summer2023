@@ -41,6 +41,7 @@ public class ExceltoEs {
         int cellIdx = 0;
 
 
+
         while (cellsInRow.hasNext()) {
 
             Cell currentCell = cellsInRow.next();
@@ -87,7 +88,7 @@ public class ExceltoEs {
             cellIdx++;
         }
 
-
+        //some fileds are not present
         if (cellIdx < 3) {
             throw new RuntimeException("insufficient data expected 3 cells ");
         }

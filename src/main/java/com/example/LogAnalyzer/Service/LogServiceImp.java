@@ -81,6 +81,7 @@ public class LogServiceImp implements LogService {
 //            System.out.println(log.getID());
             loggs.add(log);
         }
+        System.out.println(loggs.size());
         return loggs;
     }
 
@@ -95,7 +96,7 @@ public class LogServiceImp implements LogService {
         }
         logs.addAll(page.getContent());
         page.nextPageable();
-//        System.out.println(logs.size());
+        System.out.println(logs.size());
         return logs;
 
     }
@@ -165,6 +166,7 @@ public class LogServiceImp implements LogService {
             }
             scrollId = searchResponse.getScrollId();
         }
+        System.out.println(logs.size());
         return logs;
     }
 
@@ -387,7 +389,8 @@ public class LogServiceImp implements LogService {
 
         for (SearchHit hit : hits) {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-            String id = (String) sourceAsMap.get("ID");
+            String id = hit.getId();
+            System.out.println(id);
             LogEntity logg = new LogEntity();
             String timestamp = sourceAsMap.get("timestamp").toString();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -443,7 +446,7 @@ public class LogServiceImp implements LogService {
         for (SearchHit hit : hits) {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             System.out.println(sourceAsMap.toString());
-            String id = (String) sourceAsMap.get("ID");
+            String id = hit.getId();
             LogEntity logg = new LogEntity();
             String timestamp = sourceAsMap.get("timestamp").toString();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -502,7 +505,7 @@ public class LogServiceImp implements LogService {
         List<LogEntity> logs = new ArrayList<>();
         for (SearchHit hit : hits) {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-            String id = (String) sourceAsMap.get("ID");
+            String id = hit.getId();
             LogEntity logg = new LogEntity();
             String timestamp = sourceAsMap.get("timestamp").toString();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -569,7 +572,7 @@ public class LogServiceImp implements LogService {
 
     //projects only the fields specified
     @Override
-    public List<LogEntity> projectByDynamic(String... fields) {
+    public List<Map<String, Object>> projectByDynamic(String... fields) {
         QueryBuilder query = QueryBuilders.matchAllQuery();
 
         SearchSourceBuilder searchSource = new SearchSourceBuilder();
@@ -593,47 +596,20 @@ public class LogServiceImp implements LogService {
 
 
         SearchHits hits = response.getHits();
-
-        List<LogEntity> logs = new ArrayList<>();
-        int tothits = 0;
+        List<Map<String, Object>> logs = new ArrayList<>();
         for (SearchHit hit : hits) {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-            LogEntity logg = new LogEntity();
-            System.out.println(sourceAsMap.toString());
-            tothits++;
-            String source, message, id;
-            if (sourceAsMap.get("source") != null) {
-                source = (String) sourceAsMap.get("source");
-                logg.setSource(source);
-
-            }
-            if (sourceAsMap.get("message") != null) {
-                message = (String) sourceAsMap.get("message");
-                logg.setMessage(message);
-            }
-            if (sourceAsMap.get("date") != null) {
-                LocalDate dt = LocalDate.parse(sourceAsMap.get("date").toString());
-                logg.setDate(dt);
-            }
-            if (sourceAsMap.get("timestamp") != null) {
-                String timestamp = sourceAsMap.get("timestamp").toString();
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
-                formatter.setLenient(false);
-                Date tsp;
-                try {
-                    tsp = formatter.parse(timestamp);
-                    logg.setTimestamp(tsp);
-                } catch (ParseException ex) {
-                    throw new RuntimeException(ex);
+            Map<String, Object> logEntry = new HashMap<>();
+            String id=hit.getId();
+            for (String field : fields) {
+                if(field.equals("id"))logEntry.put(field,id);
+                if (sourceAsMap.containsKey(field)) {
+                    logEntry.put(field, sourceAsMap.get(field));
                 }
-
             }
-
-            logs.add(logg);
+            logs.add(logEntry);
         }
-        System.out.println(
-                logs.size()
-        );
+        System.out.println(logs.toString());
         return logs;
     }
 
