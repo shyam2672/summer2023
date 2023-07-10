@@ -12,6 +12,10 @@
         <th>Source</th>
         <th>Date</th>
         <th>Message</th>
+        <th>LogLevel</th>
+        <th>Logger</th>
+        <th>partnerid</th>
+
     </tr>
     </thead>
     <tbody>
@@ -20,6 +24,10 @@
         <td th:text="${log.source}"></td>
         <td th:text="${log.date}"></td>
         <td th:text="${log.message}"></td>
+        <td th:text="${log.loglevel}"></td>
+        <td th:text="${log.logger}"></td>
+        <td th:text="${log.partnerid}"></td>
+
     </tr>
     </tbody>
 </table>

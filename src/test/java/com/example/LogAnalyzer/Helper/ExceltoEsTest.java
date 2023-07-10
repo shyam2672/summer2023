@@ -28,22 +28,22 @@ class ExceltoEsTest {
 
     //    @Autowired
     @InjectMocks
-    private ExceltoEs helper=new ExceltoEs();
+    private ExceltoEs helper = new ExceltoEs();
 
     @Mock
     private LogRepository logRepository;
 
     @Test
-    public  void ReadTest(){
+    public void ReadTest() {
         assertDoesNotThrow(
-                ()->{
+                () -> {
                     helper.ReadFromExcel();
                 }
         );
     }
 
     @Test
-    public void WriteTest(){
+    public void WriteTest() {
 
         List<LogEntity> logs = new ArrayList<>();
         LogEntity log1 = new LogEntity();
@@ -71,19 +71,16 @@ class ExceltoEsTest {
         when(logRepository.save(eq(log1))).thenReturn(log1);
         when(logRepository.save(eq(log2))).thenReturn(log2);
 
-        assertEquals(logs,helper.WriteToEs(logRepository,logs));
+        assertEquals(logs, helper.WriteToEs(logRepository, logs));
 
 
     }
 
     @Test
-    public void validateFileTest(){
+    public void validateFileTest() {
         assertTrue(helper.validate("/Users/shyamprajapati/Downloads/LogAnalyzer/src/main/resources/static/logsdata.xlsx"));
         assertFalse(helper.validate("/Users/shyamprajapati/Downloads/LogAnalyzer/src/main/resources/static/logsdata.xlx"));
     }
-
-
-
 
 
 }

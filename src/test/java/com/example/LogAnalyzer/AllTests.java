@@ -11,7 +11,7 @@ import org.junit.platform.suite.api.SelectClasses;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
-@SelectClasses({ConfigTest.class, LogControllerTest.class, LogEntityTest.class, ExceltoEsTest.class, QueryPrinterTest.class, LogServiceImpTest.class })
+@SelectClasses({ConfigTest.class, LogControllerTest.class, LogEntityTest.class, ExceltoEsTest.class, QueryPrinterTest.class, LogServiceImpTest.class})
 public class AllTests {
 
 }

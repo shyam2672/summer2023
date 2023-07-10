@@ -42,7 +42,7 @@ class LogControllerTest {
     @MockBean
     private LogService logService;
 
-//    @InjectMocks
+    //    @InjectMocks
 //    private LogController logController;
     @Test
     void getData() {
@@ -65,18 +65,17 @@ class LogControllerTest {
         when(logService.search()).thenReturn(expectedLogs);
 
 
-            try {
-                this.mockMvc.perform(get("/api/log/search")
-                                .contentType(MediaType.APPLICATION_JSON))
-                        .andExpect(status().isOk())
-                        .andExpect(view().name("logs"))
-                        .andExpect(model().attribute("logs", expectedLogs));
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-
+        try {
+            this.mockMvc.perform(get("/api/log/search")
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(view().name("logs"))
+                    .andExpect(model().attribute("logs", expectedLogs));
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
 
+    }
 
 
     @Test
@@ -108,7 +107,7 @@ class LogControllerTest {
         }
     }
 
-//
+    //
     @Test
     void getDataScroll() {
 //
@@ -138,7 +137,8 @@ class LogControllerTest {
             throw new RuntimeException(e);
         }
     }
-//
+
+    //
     @Test
     void getCardinality() {
 //        String fieldValue = "exampleField";
@@ -191,8 +191,8 @@ class LogControllerTest {
 
         try {
             this.mockMvc.perform(get("/api/log/filterByTime").param("start", start)
-                    .param("end", end)
-                    .contentType(MediaType.APPLICATION_JSON))
+                            .param("end", end)
+                            .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(view().name("logs"))
                     .andExpect(model().attribute("logs", expectedLogs));
@@ -201,7 +201,8 @@ class LogControllerTest {
         }
 
     }
-//
+
+    //
     @Test
     void filterByField() {
 //        // Arrange
@@ -248,7 +249,8 @@ class LogControllerTest {
             throw new RuntimeException(e);
         }
     }
-//
+
+    //
     @Test
     void groupBy() {
 //        // Arrange
@@ -286,7 +288,8 @@ class LogControllerTest {
             throw new RuntimeException(e);
         }
     }
-//
+
+    //
     @Test
     void projectby() {
 //        List<String> terms = Arrays.asList("term1", "term2", "term3");
@@ -304,7 +307,7 @@ class LogControllerTest {
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("terms", Arrays.asList("field1", "field2"));
 
-        List<Map<String,Object>> expectedLogs = Arrays.asList(new HashMap<>(),new HashMap<>());
+        List<Map<String, Object>> expectedLogs = Arrays.asList(new HashMap<>(), new HashMap<>());
         when(logService.projectByDynamic("field1", "field2")).thenReturn(expectedLogs);
 
         try {

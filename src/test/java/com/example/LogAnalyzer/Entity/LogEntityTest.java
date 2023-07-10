@@ -27,6 +27,27 @@ public class LogEntityTest {
     }
 
     @Test
+    public void testGetSetloglevel() {
+        String loglevel = "test";
+        logEntity.setLoglevel(loglevel);
+        assertEquals(loglevel, logEntity.getLoglevel());
+    }
+
+    @Test
+    public void testGetSetlogger() {
+        String logger = "logger";
+        logEntity.setLogger(logger);
+        assertEquals(logger, logEntity.getLogger());
+    }
+
+    @Test
+    public void testGetSetpartnerid() {
+        String id = "test";
+        logEntity.setPartnerid(id);
+        assertEquals(id, logEntity.getPartnerid());
+    }
+
+    @Test
     public void testGetSetTimestamp() {
         Date timestamp = new Date();
         logEntity.setTimestamp(timestamp);

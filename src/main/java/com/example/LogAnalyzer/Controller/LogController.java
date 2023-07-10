@@ -24,7 +24,6 @@ public class LogController {
 
     @GetMapping("/search")
     public ModelAndView getData(){
-//            model.addAttribute("logs",logs);
         ModelAndView modelAndView=new ModelAndView("logs");
             List<LogEntity> logs=service.search();
       modelAndView.addObject("logs",logs);
@@ -33,7 +32,6 @@ public class LogController {
 
     @GetMapping("/search/using_page")
     public ModelAndView getDataPaging(){
-//            model.addAttribute("logs",logs);
         ModelAndView modelAndView=new ModelAndView("logs");
         List<LogEntity> logs=service.searchUsingPage();
         modelAndView.addObject("logs",logs);
@@ -42,7 +40,6 @@ public class LogController {
 
     @GetMapping("/search/using_scroll")
     public ModelAndView getDataScroll(){
-//            model.addAttribute("logs",logs);
         ModelAndView modelAndView=new ModelAndView("logs");
         List<LogEntity> logs=service.searchUsingScroll();
         modelAndView.addObject("logs",logs);
@@ -61,9 +58,6 @@ public class LogController {
     public ModelAndView filterByTime(@RequestParam("start") String start,@RequestParam("end") String end){
         ModelAndView modelAndView=new ModelAndView("logs");
         List<LogEntity> logs=service.filterBytime(start,end);
-        System.out.println(1);
-        System.out.println(start + " " + end);
-        System.out.println(logs.size());
         modelAndView.addObject("logs",logs);
         return modelAndView;
     }
@@ -71,11 +65,9 @@ public class LogController {
     @PostMapping("/filterByTerms")
     public List<LogEntity> filterByField(@RequestBody Map<String, Object> requestBody) {
         String field = (String) requestBody.get("field");
-        System.out.println(field);
         List<String> terms = (List<String>) requestBody.get("terms");
         try {
             List<LogEntity> logs = service.filterByTermsDynamic(field, terms.toArray(new String[0]));
-            System.out.println(logs.size());
             return logs;
         } catch (ParseException e) {
             throw new RuntimeException(e);

@@ -25,18 +25,18 @@ public class LogAnalyzerApplication {
 //static RestHighLevelClient client;
 //   static RestHighLevelClient client=new RestHighLevelClient(RestClient.builder(new HttpHost("localhost",9200,"http")));
 
-	public static void main(String[] args) {
-		ApplicationContext context=SpringApplication.run(LogAnalyzerApplication.class, args);
+    public static void main(String[] args) {
+        ApplicationContext context = SpringApplication.run(LogAnalyzerApplication.class, args);
 
 
-//  LogService obj=context.getBean(LogService.class);
+        LogService obj = context.getBean(LogService.class);
 //
 // List<LogEntity> f= obj.searchUsingScroll();
 //		String start = "2023-06-16T17:52:14.691Z";
 //		String end = "2023-06-16T17:52:14.692Z";
 //		System.out.println(obj.filterByterms().size());
 //obj.tabularAggregation();
-//		obj.savelogdata();
+        obj.savelogdata();
 ////		 obj.filterBytime(LocalDateTime.parse(start),LocalDateTime.parse(end));
 ////obj.search();
 //		try {
@@ -51,19 +51,17 @@ public class LogAnalyzerApplication {
 //		System.out.println(obj.cardinalityAggs("date"));
 ////		System.out.println(obj.searchUsingScroll().size());
 //	obj.projectByDynamic("source","date");
-//		List<LogEntity> f=obj.searhUsingScroll();
-// for(LogEntity ff:f){
-//	 System.out.println(ff.toString());
-// }
+        List<LogEntity> f = obj.searchUsingPage();
+        for (LogEntity ff : f) {
+            System.out.println(ff.toString());
+        }
 //		System.out.println(f.size());
 
 //
 // obj.search();
 
 
-
-	}
-
+    }
 
 
 }

@@ -3,11 +3,14 @@ package com.example.LogAnalyzer.Helper;
 import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Repository.LogRepository;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.juli.logging.Log;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
@@ -21,7 +24,7 @@ public class ExceltoEs {
 //    @Value("${logdata}")
 //    public  String file;
 
-    public static String file = "/Users/shyamprajapati/Downloads/LogAnalyzer/src/main/resources/static/logsdata.xlsx";
+    public static String file = "/Users/shyamprajapati/Downloads/LogAnalyzer/src/main/resources/static/new data.xls";
 
     //file type validation
     public boolean
@@ -41,27 +44,27 @@ public class ExceltoEs {
         int cellIdx = 0;
 
 
-
         while (cellsInRow.hasNext()) {
 
             Cell currentCell = cellsInRow.next();
 
             switch (cellIdx) {
                 case 0:
-                    // cell should contain some date time value
-                    if (DateUtil.isCellDateFormatted(currentCell)) {
-                        Date timestamp = currentCell.getDateCellValue();
-                        logdata.setTimestamp(timestamp);
-
-                        LocalDate date = timestamp.toInstant()
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate();
-
-                        logdata.setDate(date);
-                    } else {
-                        throw new RuntimeException("invalid date time format");
+                    String timestamp = currentCell.getStringCellValue();
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                    formatter.setLenient(false);
+                    Date tsp;
+                    try {
+                        tsp = formatter.parse(timestamp);
+                        logdata.setTimestamp(tsp);
+                    } catch (ParseException e) {
+                        throw new RuntimeException(e);
                     }
 
+                    LocalDate date = tsp.toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                    logdata.setDate(date);
                     break;
 
                 case 1:
@@ -81,6 +84,37 @@ public class ExceltoEs {
                     }
                     logdata.setMessage(message);
                     break;
+                case 3:
+                    String loglevel = currentCell.getStringCellValue();
+                    if (!loglevel.equals("ERROR")) {
+                        return null;
+                    }
+                    //loglevel  cannot be null
+                    if (loglevel == null || loglevel.equals("")) {
+                        throw new RuntimeException("loglevel cannot be null");
+                    }
+                    logdata.setLoglevel(loglevel);
+                    break;
+                case 4:
+                    String logger = currentCell.getStringCellValue();
+
+                    if (!filterLogger(logger))
+                        return null;
+
+                    //logger  cannot be null
+                    if (logger == null || logger.equals("")) {
+                        throw new RuntimeException("logger cannot be null");
+                    }
+                    logdata.setLogger(logger);
+                    break;
+                case 5:
+                    String partnerid = String.valueOf(currentCell.getNumericCellValue());
+                    //partnerid  cannot be null
+                    if (partnerid == null || partnerid.equals("")) {
+                        throw new RuntimeException("partnerid cannot be null");
+                    }
+                    logdata.setPartnerid(partnerid);
+                    break;
                 default:
                     break;
             }
@@ -94,6 +128,11 @@ public class ExceltoEs {
         }
 
         return logdata;
+    }
+
+    private boolean filterLogger(String logger) {
+        //
+        return true;
     }
 
     //utility function that reads data from excel file an returns a list of LogEntity
@@ -121,8 +160,10 @@ public class ExceltoEs {
                     continue;
                 }
 
+                LogEntity logg = isvalid(currentRow);
 
-                logs.add(isvalid(currentRow));
+                if (logg != null)
+                    logs.add(logg);
                 rowNumber++;
             }
 

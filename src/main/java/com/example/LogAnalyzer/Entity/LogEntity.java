@@ -13,19 +13,55 @@ public class
 LogEntity {
 
     @Id
-    @Field(type= FieldType.Keyword)
+    @Field(type = FieldType.Keyword)
     private String id;
 
     @Field(type = FieldType.Date)
     private Date timestamp;
 
-    @Field(type= FieldType.Keyword)
+    @Field(type = FieldType.Keyword)
     private String source;
     @Field(type = FieldType.Date)
     private LocalDate date;
 
     //    @Field(type = FieldType.Text)
     private String message;
+
+    @Field(type = FieldType.Keyword)
+    private String loglevel;
+
+    @Field(type = FieldType.Keyword)
+    private String logger;
+
+    @Field(type = FieldType.Keyword)
+    private String partnerid;
+
+
+    public String getLoglevel() {
+        return loglevel;
+    }
+
+    public void setLoglevel(String loglevel) {
+        this.loglevel = loglevel;
+    }
+
+    public String getLogger() {
+        return logger;
+    }
+
+    public void setLogger(String logger) {
+        this.logger = logger;
+    }
+
+    public String getPartnerid() {
+        return partnerid;
+    }
+
+    public void setPartnerid(String partnerid) {
+        this.partnerid = partnerid;
+    }
+
+
     public LocalDate getDate() {
         return date;
     }

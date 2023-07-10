@@ -131,7 +131,7 @@ public class LogServiceImp implements LogService {
             SearchHits hits = searchResponse.getHits();
             if (hits.getHits().length == 0) break;
             for (SearchHit hit : hits) {
-                String id=hit.getId();
+                String id = hit.getId();
                 Map<String, Object> sourceAsMap = hit.getSourceAsMap();
 //                System.out.println(sourceAsMap.toString());
                 tothits++;
@@ -155,6 +155,13 @@ public class LogServiceImp implements LogService {
                 logg.setSource(source);
                 logg.setID(id);
                 logg.setMessage(message);
+
+                String loglevel = (String) sourceAsMap.get("loglevel");
+                String logger = (String) sourceAsMap.get("logger");
+                String partnerid = (String) sourceAsMap.get("partnerid");
+                logg.setPartnerid(partnerid);
+                logg.setLogger(logger);
+                logg.setLoglevel(loglevel);
                 logs.add(logg);
 
             }
@@ -180,7 +187,7 @@ public class LogServiceImp implements LogService {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("loganalyzer");
         searchRequest.source(new SearchSourceBuilder().query(query).aggregation(aggregation));
-        System.out.println(QueryPrinter.printQuery(searchRequest,client));
+        System.out.println(QueryPrinter.printQuery(searchRequest, client));
         SearchResponse searchResponse;
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -205,6 +212,7 @@ public class LogServiceImp implements LogService {
         System.out.println(mp.size());
         return mp;
     }
+
     //an example of nested aggregation,count of doc under a timestamp under a source
     @Override
     public Map<String, Long> nestedAggregation() {
@@ -218,7 +226,7 @@ public class LogServiceImp implements LogService {
         sourcesAggregation.subAggregation(timestampsAggregation.subAggregation(uniqueIdsAggregation));
         searchSourceBuilder.aggregation(sourcesAggregation);
         searchRequest.source(searchSourceBuilder);
-        System.out.println(QueryPrinter.printQuery(searchRequest,client));
+        System.out.println(QueryPrinter.printQuery(searchRequest, client));
         SearchResponse searchResponse;
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -374,7 +382,7 @@ public class LogServiceImp implements LogService {
         SearchRequest searchRequest = new SearchRequest();
         searchRequest.indices("loganalyzer");
         searchRequest.source(searchSource);
-        System.out.println(QueryPrinter.printQuery(searchRequest,client));
+        System.out.println(QueryPrinter.printQuery(searchRequest, client));
         SearchResponse response;
         try {
             response = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -411,6 +419,12 @@ public class LogServiceImp implements LogService {
             logg.setSource(source);
             logg.setMessage(message);
             logg.setDate(dt);
+            String loglevel = (String) sourceAsMap.get("loglevel");
+            String logger = (String) sourceAsMap.get("logger");
+            String partnerid = (String) sourceAsMap.get("partnerid");
+            logg.setPartnerid(partnerid);
+            logg.setLogger(logger);
+            logg.setLoglevel(loglevel);
             logs.add(logg);
             System.out.println(timestamp);
             System.out.println(source + "----" + message);
@@ -474,14 +488,15 @@ public class LogServiceImp implements LogService {
 
         return logs;
     }
+
     //generic filter function wth any fied and any number of terms
     @Override
     public List<LogEntity> filterByTermsDynamic(String field, String... terms) throws ParseException {
 
-        if (!field.equals("id") &&  !field.equals("timestamp") &&  !field.equals("source") && !field.equals("message")) {
+        if (!field.equals("id") && !field.equals("timestamp") && !field.equals("source") && !field.equals("message")) {
             throw new RuntimeException("invalid field name");
         }
-        for(String s:terms) System.out.println(s);
+        for (String s : terms) System.out.println(s);
         TermsQueryBuilder termsQuery = QueryBuilders.termsQuery(field, terms);
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
                 .query(termsQuery);
@@ -524,6 +539,12 @@ public class LogServiceImp implements LogService {
             logg.setSource(source);
             logg.setMessage(message);
             logg.setDate(dt);
+            String loglevel = (String) sourceAsMap.get("loglevel");
+            String logger = (String) sourceAsMap.get("logger");
+            String partnerid = (String) sourceAsMap.get("partnerid");
+            logg.setPartnerid(partnerid);
+            logg.setLogger(logger);
+            logg.setLoglevel(loglevel);
             logs.add(logg);
             System.out.println(timestamp);
             System.out.println(source + "----" + message);
@@ -531,6 +552,7 @@ public class LogServiceImp implements LogService {
         System.out.println(logs.size());
         return logs;
     }
+
     //groupBys on given field
     @Override
     public Map<String, Long> groupByDynamic(String field) {
@@ -600,9 +622,9 @@ public class LogServiceImp implements LogService {
         for (SearchHit hit : hits) {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             Map<String, Object> logEntry = new HashMap<>();
-            String id=hit.getId();
+            String id = hit.getId();
             for (String field : fields) {
-                if(field.equals("id"))logEntry.put(field,id);
+                if (field.equals("id")) logEntry.put(field, id);
                 if (sourceAsMap.containsKey(field)) {
                     logEntry.put(field, sourceAsMap.get(field));
                 }
