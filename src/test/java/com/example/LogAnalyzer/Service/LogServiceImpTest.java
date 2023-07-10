@@ -43,6 +43,7 @@ import static org.mockito.Mockito.*;
 
 //@SpringBootTest
 @ExtendWith(MockitoExtension.class)
+public
 class LogServiceImpTest {
 
     @InjectMocks

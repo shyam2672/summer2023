@@ -18,7 +18,7 @@ import org.mockito.Mockito;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class QueryPrinterTest {
+ public class QueryPrinterTest {
 
     @Test
     void printQuery() {

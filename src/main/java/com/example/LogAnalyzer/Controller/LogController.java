@@ -28,7 +28,6 @@ public class LogController {
         ModelAndView modelAndView=new ModelAndView("logs");
             List<LogEntity> logs=service.search();
       modelAndView.addObject("logs",logs);
-        System.out.println("hiii");
             return modelAndView;
     }
 
@@ -38,7 +37,6 @@ public class LogController {
         ModelAndView modelAndView=new ModelAndView("logs");
         List<LogEntity> logs=service.searchUsingPage();
         modelAndView.addObject("logs",logs);
-        System.out.println("hiii");
         return modelAndView;
     }
 
@@ -48,7 +46,6 @@ public class LogController {
         ModelAndView modelAndView=new ModelAndView("logs");
         List<LogEntity> logs=service.searchUsingScroll();
         modelAndView.addObject("logs",logs);
-        System.out.println("hiii");
         return modelAndView;
     }
 
@@ -68,7 +65,6 @@ public class LogController {
         System.out.println(start + " " + end);
         System.out.println(logs.size());
         modelAndView.addObject("logs",logs);
-        System.out.println("hiii");
         return modelAndView;
     }
 
@@ -92,7 +88,6 @@ public class LogController {
         ModelAndView modelAndView=new ModelAndView("GroupByResults");
         Map<String, Long> groupedData=service.groupByDynamic(fieldValue);
         modelAndView.addObject("grouped",groupedData);
-        System.out.println("hiii");
         return modelAndView;
     }
 

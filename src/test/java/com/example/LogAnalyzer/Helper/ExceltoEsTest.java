@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 
 //@SpringBootTest
 @ExtendWith(MockitoExtension.class)
+public
 //@TestPropertySource(properties = "logdata=/Users/shyamprajapati/Downloads/LogAnalyzer/src/main/resources/static/logsdata.xlsx")
 class ExceltoEsTest {
 
