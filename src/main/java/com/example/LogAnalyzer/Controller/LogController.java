@@ -89,8 +89,8 @@ public class LogController {
         List<String> terms = (List<String>) requestBody.get("terms");
         List<Map<String, Object>> logs = service.projectByDynamic(terms.toArray(new String[0]));
         return logs;
-
     }
+
 
 
 

@@ -24,7 +24,6 @@ LogEntity {
     @Field(type = FieldType.Date)
     private LocalDate date;
 
-    //    @Field(type = FieldType.Text)
     private String message;
 
     @Field(type = FieldType.Keyword)

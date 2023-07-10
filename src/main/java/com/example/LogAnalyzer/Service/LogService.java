@@ -20,10 +20,6 @@ public interface LogService {
     List<LogEntity> projectBySourceAndMessage();
 
 
-
-    //fitler docs in given time range
-
-    //fitler docs in given time range
     List<LogEntity> filterBytime(String start, String end);
 
     List<LogEntity> filterByterms();
@@ -41,4 +37,7 @@ public interface LogService {
     List<LogEntity> filterByTermsDynamic(String field, String ...terms) throws ParseException;
 
     List<Map<String, Object>> projectByDynamic(String... fields);
+
+    Map<String, Long> netedGroupByDynamic(String field,String field2);
+
 }

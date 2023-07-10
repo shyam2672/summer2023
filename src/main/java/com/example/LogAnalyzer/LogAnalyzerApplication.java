@@ -36,7 +36,8 @@ public class LogAnalyzerApplication {
 //		String end = "2023-06-16T17:52:14.692Z";
 //		System.out.println(obj.filterByterms().size());
 //obj.tabularAggregation();
-        obj.savelogdata();
+//        obj.savelogdata();
+        obj.netedGroupByDynamic("source","logger");
 ////		 obj.filterBytime(LocalDateTime.parse(start),LocalDateTime.parse(end));
 ////obj.search();
 //		try {
@@ -50,11 +51,11 @@ public class LogAnalyzerApplication {
 //		obj.search();
 //		System.out.println(obj.cardinalityAggs("date"));
 ////		System.out.println(obj.searchUsingScroll().size());
-//	obj.projectByDynamic("source","date");
-        List<LogEntity> f = obj.searchUsingPage();
-        for (LogEntity ff : f) {
-            System.out.println(ff.toString());
-        }
+////	obj.projectByDynamic("source","date");
+//        List<LogEntity> f = obj.searchUsingPage();
+//        for (LogEntity ff : f) {
+//            System.out.println(ff.toString());
+//        }
 //		System.out.println(f.size());
 
 //

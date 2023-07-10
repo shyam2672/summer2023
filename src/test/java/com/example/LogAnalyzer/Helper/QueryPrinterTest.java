@@ -18,7 +18,7 @@ import org.mockito.Mockito;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
- public class QueryPrinterTest {
+public class QueryPrinterTest {
 
     @Test
     void printQuery() {
@@ -37,7 +37,7 @@ import static org.mockito.Mockito.*;
         doAnswer(invocation -> {
             listener.onResponse(searchResponse);
             return null;
-        }).when(client).searchAsync(eq(searchRequest),eq(requestOptions), eq(listener));
+        }).when(client).searchAsync(eq(searchRequest), eq(requestOptions), eq(listener));
 
         String queryString = QueryPrinter.printQuery(searchRequest, client);
         String expectedQueryString = sourceBuilder.toString();
@@ -46,6 +46,5 @@ import static org.mockito.Mockito.*;
         verify(client).searchAsync(eq(searchRequest), eq(requestOptions), captor.capture());
         ActionListener listener1 = captor.getValue();
         verify(client).searchAsync(eq(searchRequest), eq(requestOptions), eq(listener1));
-//        verify(client).searchAsync(eq(searchRequest), eq(requestOptions), eq(listener));
     }
 }

@@ -1,9 +1,7 @@
 package com.example.LogAnalyzer.Entity;
 
-import com.example.LogAnalyzer.Entity.LogEntity;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -15,7 +13,7 @@ public class LogEntityTest {
     private static LogEntity logEntity;
 
     @BeforeAll
-    public static  void setUp() {
+    public static void setUp() {
         logEntity = new LogEntity();
     }
 

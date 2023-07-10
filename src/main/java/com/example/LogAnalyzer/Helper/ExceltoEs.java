@@ -3,7 +3,6 @@ package com.example.LogAnalyzer.Helper;
 import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Repository.LogRepository;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.juli.logging.Log;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.stereotype.Component;
 
@@ -19,10 +18,6 @@ import java.util.*;
 //helper class to read data from excel file and write it on es
 @Component
 public class ExceltoEs {
-
-    // Can be injected from properties
-//    @Value("${logdata}")
-//    public  String file;
 
     public static String file = "/Users/shyamprajapati/Downloads/LogAnalyzer/src/main/resources/static/new data.xls";
 
@@ -182,15 +177,11 @@ public class ExceltoEs {
     public List<LogEntity> WriteToEs(LogRepository logRepository, List<LogEntity> logs) {
         List<LogEntity> Logs = new ArrayList<>();
         for (LogEntity loge : logs) {
-//                String id=UUID.randomUUID().toString();
-//                loge.setID(id);
-//            System.out.println(loge.getTimestamp());
 
             Logs.add(logRepository.save(loge));
         }
         try {
             return Logs;
-//   return (List<LogEntity>) logRepository.saveAll(logs);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

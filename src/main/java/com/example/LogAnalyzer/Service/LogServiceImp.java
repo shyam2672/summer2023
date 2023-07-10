@@ -173,7 +173,6 @@ public class LogServiceImp implements LogService {
             }
             scrollId = searchResponse.getScrollId();
         }
-        System.out.println(logs.size());
         return logs;
     }
 
@@ -207,9 +206,7 @@ public class LogServiceImp implements LogService {
             Cardinality uniqueTimestamps = sourcebucket.getAggregations().get("unique_timestamps");
             long value = uniqueTimestamps.getValue();
             mp.put(source, value);
-            System.out.println("Source: " + source + ", Total Timestamps: " + value);
         }
-        System.out.println(mp.size());
         return mp;
     }
 
@@ -249,7 +246,6 @@ public class LogServiceImp implements LogService {
 
                 Cardinality uniqueIds = timestampsBucket.getAggregations().get("unique_dates");
                 long value = uniqueIds.getValue();
-                System.out.println("Source: " + source + ", Timestamp: " + timestamp + ", Unique Dates: " + value);
                 mp.put(source + "-" + timestamp, value);
             }
         }
@@ -278,7 +274,6 @@ public class LogServiceImp implements LogService {
         Cardinality cardinalityAgg = searchResponse.getAggregations().get("unique_" + field);
         long cardinality = cardinalityAgg.getValue();
 
-        System.out.println("Cardinality (number of distinct values) for field " + field + " is: " + cardinality);
         return cardinality;
     }
 
@@ -301,7 +296,6 @@ public class LogServiceImp implements LogService {
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
-            System.out.println(searchResponse == null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -312,11 +306,8 @@ public class LogServiceImp implements LogService {
         List<? extends Terms.Bucket> sourceBuckets = sourceaggs.getBuckets();
         Map<String, Long> mp = new HashMap<>();
         for (Terms.Bucket sourceBucket : sourceBuckets) {
-            System.out.println("fff");
-            System.out.println(sourceBucket.getKeyAsString() + "---" + sourceBucket.getDocCount());
             mp.put(sourceBucket.getKeyAsString(), sourceBucket.getDocCount());
         }
-//        System.out.println(aggs);
         return mp;
     }
 
@@ -344,7 +335,6 @@ public class LogServiceImp implements LogService {
             throw new RuntimeException(e);
         }
 
-        System.out.println(response);
 
         SearchHits hits = response.getHits();
 
@@ -352,7 +342,6 @@ public class LogServiceImp implements LogService {
         int tothits = 0;
         for (SearchHit hit : hits) {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-//f++;
             tothits++;
             String source = (String) sourceAsMap.get("source");
             String message = (String) sourceAsMap.get("message");
@@ -360,7 +349,6 @@ public class LogServiceImp implements LogService {
             logg.setID(String.valueOf(tothits));
             logg.setSource(source);
             logg.setMessage(message);
-            System.out.println(source + "----" + message);
             logs.add(logg);
         }
 
@@ -426,10 +414,7 @@ public class LogServiceImp implements LogService {
             logg.setLogger(logger);
             logg.setLoglevel(loglevel);
             logs.add(logg);
-            System.out.println(timestamp);
-            System.out.println(source + "----" + message);
         }
-        System.out.println(logs.size());
         return logs;
     }
 
@@ -482,8 +467,6 @@ public class LogServiceImp implements LogService {
             logg.setMessage(message);
             logg.setDate(dt);
             logs.add(logg);
-            System.out.println(timestamp);
-            System.out.println(source + "----" + message);
         }
 
         return logs;
@@ -546,10 +529,7 @@ public class LogServiceImp implements LogService {
             logg.setLogger(logger);
             logg.setLoglevel(loglevel);
             logs.add(logg);
-            System.out.println(timestamp);
-            System.out.println(source + "----" + message);
         }
-        System.out.println(logs.size());
         return logs;
     }
 
@@ -572,7 +552,6 @@ public class LogServiceImp implements LogService {
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
-            System.out.println(searchResponse == null);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -583,12 +562,9 @@ public class LogServiceImp implements LogService {
         List<? extends Terms.Bucket> sourceBuckets = fieldaggs.getBuckets();
         Map<String, Long> mp = new HashMap<>();
         for (Terms.Bucket sourceBucket : sourceBuckets) {
-            System.out.println("fff");
-            System.out.println(sourceBucket.getKeyAsString() + "---" + sourceBucket.getDocCount());
             tot += sourceBucket.getDocCount();
             mp.put(sourceBucket.getKeyAsString(), sourceBucket.getDocCount());
         }
-        System.out.println(tot);
         return mp;
     }
 
@@ -631,8 +607,45 @@ public class LogServiceImp implements LogService {
             }
             logs.add(logEntry);
         }
-        System.out.println(logs.toString());
         return logs;
     }
+
+    @Override
+    public Map<String, Long> netedGroupByDynamic(String field1,String field2) {
+
+        QueryBuilder query = QueryBuilders.matchAllQuery();
+        AggregationBuilder aggregation = AggregationBuilders
+                .terms("field1").field(field1).subAggregation(AggregationBuilders.terms("field2").field(field2));
+
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("loganalyzer");
+        searchRequest.source(new SearchSourceBuilder().query(query).aggregation(aggregation));
+        System.out.println(QueryPrinter.printQuery(searchRequest, client));
+        SearchResponse searchResponse;
+        try {
+            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Aggregations aggs = searchResponse.getAggregations();
+        Terms field1aggs = aggs.get("field1");
+
+        List<? extends Terms.Bucket> sourceBuckets = field1aggs.getBuckets();
+        Map<String, Long> mp = new HashMap<>();
+        for (Terms.Bucket sourcebucket : sourceBuckets) {
+            String source = sourcebucket.getKeyAsString();
+
+            Terms field2aggs=sourcebucket.getAggregations().get("field2");
+
+            for (Terms.Bucket field2bucket : field2aggs.getBuckets()) {
+               mp.put(source+"-"+field2bucket.getKeyAsString(), field2bucket.getDocCount());
+            }
+
+        }
+//        System.out.println(mp.toString());
+        return mp;
+    }
+
 
 }

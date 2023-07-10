@@ -10,7 +10,6 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.TermsQueryBuilder;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -41,7 +40,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-//@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 public
 class LogServiceImpTest {
@@ -851,6 +849,69 @@ class LogServiceImpTest {
         assertEquals("message1", logs.get(0).get("message"));
 
     }
+
+
+    @Test
+    public void testNestedGroupByDynamic() throws IOException {
+
+        //create mock objects  abd stub them
+        SearchResponse searchResponse = mock(SearchResponse.class);
+        Aggregations aggs = mock(Aggregations.class);
+        Terms field1aggs = mock(Terms.class);
+        Terms field2aggs = mock(Terms.class);
+        when(searchResponse.getAggregations()).thenReturn(aggs);
+        Terms.Bucket bucket1 = mock(Terms.Bucket.class);
+        when(bucket1.getKeyAsString()).thenReturn("field1");
+        when(bucket1.getDocCount()).thenReturn(10L);
+        Terms.Bucket bucket2 = mock(Terms.Bucket.class);
+        when(bucket2.getKeyAsString()).thenReturn("field2");
+        when(bucket2.getDocCount()).thenReturn(20L);
+        List<Terms.Bucket> terms = new ArrayList<Terms.Bucket>();
+        terms.add(bucket1);
+        terms.add(bucket2);
+        List<Terms.Bucket> buckets = List.of(bucket1, bucket2);
+        doAnswer(invocation -> {
+            return buckets;
+        }).when(field1aggs).getBuckets();
+
+        doAnswer(invocation -> {
+            return buckets;
+        }).when(field2aggs).getBuckets();
+
+        when(aggs.get("field1")).thenReturn(field1aggs);
+        when(aggs.get("field2")).thenReturn(field2aggs);
+
+        when(bucket1.getAggregations()).thenReturn(aggs);
+        when(bucket2.getAggregations()).thenReturn(aggs);
+
+        try {
+            when(client.search(any(), any())).thenReturn(searchResponse);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        // call methodunder test
+        Map<String, Long> result = logService.netedGroupByDynamic("field1","field2");
+//
+
+        //verify
+        try {
+            verify(client).search((SearchRequest) any(), any());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        verify(searchResponse).getAggregations();
+
+        //Assertions
+        assertEquals(4, result.size());
+        assertEquals(Long.valueOf(10L), result.get("field1-field1"));
+        assertEquals(Long.valueOf(20L), result.get("field2-field2"));
+
+    }
+
+
 
 
 }
