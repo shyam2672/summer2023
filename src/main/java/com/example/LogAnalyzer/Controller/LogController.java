@@ -21,44 +21,43 @@ public class LogController {
     }
 
 
-
     @GetMapping("/search")
-    public ModelAndView getData(){
-        ModelAndView modelAndView=new ModelAndView("logs");
-            List<LogEntity> logs=service.search();
-      modelAndView.addObject("logs",logs);
-            return modelAndView;
+    public ModelAndView getData() {
+        ModelAndView modelAndView = new ModelAndView("logs");
+        List<LogEntity> logs = service.search();
+        modelAndView.addObject("logs", logs);
+        return modelAndView;
     }
 
     @GetMapping("/search/using_page")
-    public ModelAndView getDataPaging(){
-        ModelAndView modelAndView=new ModelAndView("logs");
-        List<LogEntity> logs=service.searchUsingPage();
-        modelAndView.addObject("logs",logs);
+    public ModelAndView getDataPaging() {
+        ModelAndView modelAndView = new ModelAndView("logs");
+        List<LogEntity> logs = service.searchUsingPage();
+        modelAndView.addObject("logs", logs);
         return modelAndView;
     }
 
     @GetMapping("/search/using_scroll")
-    public ModelAndView getDataScroll(){
-        ModelAndView modelAndView=new ModelAndView("logs");
-        List<LogEntity> logs=service.searchUsingScroll();
-        modelAndView.addObject("logs",logs);
+    public ModelAndView getDataScroll() {
+        ModelAndView modelAndView = new ModelAndView("logs");
+        List<LogEntity> logs = service.searchUsingScroll();
+        modelAndView.addObject("logs", logs);
         return modelAndView;
     }
 
-//    http://localhost:8080/api/log/cardinality?fieldValue=source
+    //    http://localhost:8080/api/log/cardinality?fieldValue=source
     @GetMapping("/cardinality")
     public Long getCardinality(@RequestParam("fieldValue") String fieldValue) {
-       return service.cardinalityAggs(fieldValue);
+        return service.cardinalityAggs(fieldValue);
     }
 
 
-//    http://localhost:8080/api/log/filterByTime?start=2023-06-16T17:52:14.691Z&end=2023-06-16T17:52:14.692Z
+    //    http://localhost:8080/api/log/filterByTime?start=2023-06-16T17:52:14.691Z&end=2023-06-16T17:52:14.692Z
     @GetMapping("/filterByTime")
-    public ModelAndView filterByTime(@RequestParam("start") String start,@RequestParam("end") String end){
-        ModelAndView modelAndView=new ModelAndView("logs");
-        List<LogEntity> logs=service.filterBytime(start,end);
-        modelAndView.addObject("logs",logs);
+    public ModelAndView filterByTime(@RequestParam("start") String start, @RequestParam("end") String end) {
+        ModelAndView modelAndView = new ModelAndView("logs");
+        List<LogEntity> logs = service.filterBytime(start, end);
+        modelAndView.addObject("logs", logs);
         return modelAndView;
     }
 
@@ -74,24 +73,28 @@ public class LogController {
         }
     }
 
-//    http://localhost:8080/api/log/groupBy?fieldValue=source
+    //    http://localhost:8080/api/log/groupBy?fieldValue=source
     @GetMapping("/groupBy")
     public ModelAndView groupBy(@RequestParam("fieldValue") String fieldValue) {
-        ModelAndView modelAndView=new ModelAndView("GroupByResults");
-        Map<String, Long> groupedData=service.groupByDynamic(fieldValue);
-        modelAndView.addObject("grouped",groupedData);
+        ModelAndView modelAndView = new ModelAndView("GroupByResults");
+        Map<String, Long> groupedData = service.groupByDynamic(fieldValue);
+        modelAndView.addObject("grouped", groupedData);
         return modelAndView;
     }
 
 
     @PostMapping("/projectBy")
-    public List<Map<String, Object>> projectby(@RequestBody Map<String, Object> requestBody){
+    public List<Map<String, Object>> projectby(@RequestBody Map<String, Object> requestBody) {
         List<String> terms = (List<String>) requestBody.get("terms");
         List<Map<String, Object>> logs = service.projectByDynamic(terms.toArray(new String[0]));
         return logs;
     }
 
-
+    @GetMapping("/nestedGroupBy")
+    public Map<String, List<Map<String, Long>>> nestedGroupBy(@RequestParam("field1Value") String field1, @RequestParam("field2Value") String field2) {
+        Map<String, List<Map<String, Long>>> groupedData = service.netedGroupByDynamic(field1, field2);
+        return groupedData;
+    }
 
 
 }

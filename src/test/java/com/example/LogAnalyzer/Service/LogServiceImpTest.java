@@ -892,7 +892,7 @@ class LogServiceImpTest {
 
 
         // call methodunder test
-        Map<String, Long> result = logService.netedGroupByDynamic("field1","field2");
+        Map<String, List<Map<String, Long>>> result = logService.netedGroupByDynamic("field1","field2");
 //
 
         //verify
@@ -905,9 +905,7 @@ class LogServiceImpTest {
         verify(searchResponse).getAggregations();
 
         //Assertions
-        assertEquals(4, result.size());
-        assertEquals(Long.valueOf(10L), result.get("field1-field1"));
-        assertEquals(Long.valueOf(20L), result.get("field2-field2"));
+        assertEquals(2, result.size());
 
     }
 

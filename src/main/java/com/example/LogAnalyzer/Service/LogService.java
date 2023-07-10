@@ -38,6 +38,6 @@ public interface LogService {
 
     List<Map<String, Object>> projectByDynamic(String... fields);
 
-    Map<String, Long> netedGroupByDynamic(String field,String field2);
+    Map<String, List<Map<String, Long>>> netedGroupByDynamic(String field, String field2);
 
 }

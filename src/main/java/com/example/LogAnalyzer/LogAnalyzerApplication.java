@@ -37,7 +37,7 @@ public class LogAnalyzerApplication {
 //		System.out.println(obj.filterByterms().size());
 //obj.tabularAggregation();
 //        obj.savelogdata();
-        obj.netedGroupByDynamic("source","logger");
+//        obj.netedGroupByDynamic("source","logger");
 ////		 obj.filterBytime(LocalDateTime.parse(start),LocalDateTime.parse(end));
 ////obj.search();
 //		try {

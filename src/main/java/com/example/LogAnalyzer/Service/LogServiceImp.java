@@ -611,7 +611,7 @@ public class LogServiceImp implements LogService {
     }
 
     @Override
-    public Map<String, Long> netedGroupByDynamic(String field1,String field2) {
+    public Map<String, List<Map<String, Long>>> netedGroupByDynamic(String field1, String field2) {
 
         QueryBuilder query = QueryBuilders.matchAllQuery();
         AggregationBuilder aggregation = AggregationBuilders
@@ -632,18 +632,23 @@ public class LogServiceImp implements LogService {
         Terms field1aggs = aggs.get("field1");
 
         List<? extends Terms.Bucket> sourceBuckets = field1aggs.getBuckets();
-        Map<String, Long> mp = new HashMap<>();
+        Map<String,List<Map<String,Long>>> mp = new HashMap<>();
         for (Terms.Bucket sourcebucket : sourceBuckets) {
             String source = sourcebucket.getKeyAsString();
-
+            mp.put(source,new ArrayList<>());
             Terms field2aggs=sourcebucket.getAggregations().get("field2");
 
             for (Terms.Bucket field2bucket : field2aggs.getBuckets()) {
-               mp.put(source+"-"+field2bucket.getKeyAsString(), field2bucket.getDocCount());
+                Map<String,Long> mp1=new HashMap<>();
+                mp1.put(field2bucket.getKeyAsString(), field2bucket.getDocCount());
+                System.out.println(field2bucket.getKeyAsString());
+                System.out.println(mp1.toString());
+             mp.get(source).add(mp1);
+                System.out.println(mp.toString());
             }
 
         }
-//        System.out.println(mp.toString());
+        System.out.println(mp.toString());
         return mp;
     }
 

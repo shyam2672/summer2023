@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.text.ParseException;
 import java.util.*;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.mockito.ArgumentMatchers.eq;
@@ -196,4 +197,33 @@ class LogControllerTest {
         }
 
     }
+
+    @Test
+    void nestedGroupBy() {
+        Map<String, List<Map<String, Long>>> nestedMap = new HashMap<>();
+        List<Map<String, Long>> innerList = new ArrayList<>();
+        Map<String, Long> innerMap = new HashMap<>();
+        innerMap.put("value1", 10L);
+        innerMap.put("value2", 20L);
+        innerList.add(innerMap);
+        nestedMap.put("key1", innerList);
+
+        when(logService.netedGroupByDynamic(anyString(), anyString())).thenReturn(nestedMap);
+
+
+        try {
+            mockMvc.perform(get("/api/log/nestedGroupBy")
+                            .param("field1Value", "value1")
+                            .param("field2Value", "value2"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(content().json("{\"key1\":[{\"value1\":10,\"value2\":20}]}"));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
+
 }

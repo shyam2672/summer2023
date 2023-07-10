@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Group By Results</title>
+</head>
+<body>
+<table>
+  <thead>
+  <tr>
+    <th>Field 1</th>
+    <th>Field 2</th>
+    <th>Count</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr th:each="entry1 : ${data}">
+    <td th:text="${entry1.key}"></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr th:each="entry2 : ${entry1.value}">
+    <td></td>
+    <td th:text="${entry2.key}"></td>
+    <td th:text="${entry2.value}"></td>
+  </tr>
+  </tbody>
+</table>
+</body>
+</html>
