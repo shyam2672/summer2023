@@ -74,7 +74,13 @@
 			<artifactId>junit-platform-suite-engine</artifactId>
 			<version>1.8.1</version>
 		</dependency>
-<!--        <dependency>-->
+		<!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-mongodb -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-mongodb</artifactId>
+		</dependency>
+
+		<!--        <dependency>-->
 <!--            <groupId>junit</groupId>-->
 <!--            <artifactId>junit</artifactId>-->
 <!--            <scope>test</scope>-->

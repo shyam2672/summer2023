@@ -1,7 +1,9 @@
 package com.example.LogAnalyzer.Helper;
 
 import com.example.LogAnalyzer.Entity.LogEntity;
+import com.example.LogAnalyzer.Entity.LoggerEntity;
 import com.example.LogAnalyzer.Repository.LogRepository;
+import com.example.LogAnalyzer.Repository.LoggerRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,6 +15,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,17 +24,43 @@ public class ExceltoEsTest {
 
     //    @Autowired
     @InjectMocks
-    private ExceltoEs helper = new ExceltoEs();
+    private ExceltoEs helper ;
 
     @Mock
     private LogRepository logRepository;
 
+    @Mock
+    private LoggerRepository loggerRepository;
+
+
     @Test
     public void ReadTest() {
+        List<LoggerEntity> loggers=new ArrayList<>();
+        LoggerEntity logger=new LoggerEntity();
+        logger.setId("id");
+        logger.setlogger("com.spr.core.monitoring.impl.logger.AbstractMonitoringLogger");
+        loggers.add(logger);
+        doAnswer(invocation -> {
+            return loggers;
+        }).when(loggerRepository).findAll();
+
         assertDoesNotThrow(() -> {
             helper.ReadFromExcel();
         });
     }
+
+
+    @Test
+    public void testFetchValidLoggers(){
+         List<String> loggers=new ArrayList<>();
+         loggers.add("logger1");
+        doAnswer(invocation -> {
+            return loggers;
+        }).when(loggerRepository).findAll();
+        helper.fetchValidLoggers();
+        assertEquals(helper.validloggers,loggers);
+    }
+
 
     @Test
     public void WriteTest() {

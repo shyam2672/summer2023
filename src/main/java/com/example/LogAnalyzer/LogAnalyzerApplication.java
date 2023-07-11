@@ -53,6 +53,8 @@ public class LogAnalyzerApplication {
 ////		System.out.println(obj.searchUsingScroll().size());
 ////	obj.projectByDynamic("source","date");
 //        List<LogEntity> f = obj.searchUsingPage();
+//        obj.groupByDynamic("logger");
+
 //        for (LogEntity ff : f) {
 //            System.out.println(ff.toString());
 //        }

@@ -1,6 +1,7 @@
 package com.example.LogAnalyzer.Controller;
 
 import com.example.LogAnalyzer.Entity.LogEntity;
+import com.example.LogAnalyzer.Repository.LoggerRepository;
 import com.example.LogAnalyzer.Service.LogService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,9 @@ class LogControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private LogService logService;
+
+    @MockBean
+    private LoggerRepository loggerRepository;
 
 
     @Test

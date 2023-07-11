@@ -1,6 +1,7 @@
 package com.example.LogAnalyzer;
 
 import com.example.LogAnalyzer.Entity.LogEntity;
+import com.example.LogAnalyzer.Helper.ExceltoEs;
 import com.example.LogAnalyzer.LogAnalyzerApplication;
 import com.example.LogAnalyzer.Service.LogService;
 import org.junit.jupiter.api.Test;
@@ -18,8 +19,12 @@ public class LogAnalyzerApplicationTest {
 	@Autowired
 	private LogService logService;
 
+	@Autowired
+	private ExceltoEs helper;
+
 	@Test
 	public void testLogService() {
 		assertNotNull(logService);
+		assertNotNull(helper);
 	}
 }

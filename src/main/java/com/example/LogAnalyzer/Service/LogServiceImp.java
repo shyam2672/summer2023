@@ -4,6 +4,7 @@ import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Helper.ExceltoEs;
 import com.example.LogAnalyzer.Helper.QueryPrinter;
 import com.example.LogAnalyzer.Repository.LogRepository;
+import com.example.LogAnalyzer.Repository.LoggerRepository;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -564,6 +565,7 @@ public class LogServiceImp implements LogService {
         for (Terms.Bucket sourceBucket : sourceBuckets) {
             tot += sourceBucket.getDocCount();
             mp.put(sourceBucket.getKeyAsString(), sourceBucket.getDocCount());
+            System.out.println(sourceBucket.getKeyAsString());
         }
         return mp;
     }

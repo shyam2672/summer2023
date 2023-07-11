@@ -1,9 +1,12 @@
 package com.example.LogAnalyzer.Helper;
 
 import com.example.LogAnalyzer.Entity.LogEntity;
+import com.example.LogAnalyzer.Entity.LoggerEntity;
 import com.example.LogAnalyzer.Repository.LogRepository;
+import com.example.LogAnalyzer.Repository.LoggerRepository;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
@@ -13,11 +16,25 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.logging.Logger;
 
 
 //helper class to read data from excel file and write it on es
 @Component
 public class ExceltoEs {
+//
+//    @Autowired
+//    private loggerRepository validlogger;
+
+
+    @Autowired
+    private LoggerRepository loggerRepository;
+
+
+
+
+
+    List<LoggerEntity> validloggers;
 
     public static String file = "/Users/shyamprajapati/Downloads/LogAnalyzer/src/main/resources/static/new data.xls";
 
@@ -28,6 +45,9 @@ public class ExceltoEs {
         return extension.equalsIgnoreCase("xlsx") || extension.equalsIgnoreCase("xls");
     }
 
+    public void fetchValidLoggers(){
+        validloggers=loggerRepository.findAll();
+    }
 
     //returns an entity if row is valid
     public LogEntity isvalid(Row row) {
@@ -92,7 +112,6 @@ public class ExceltoEs {
                     break;
                 case 4:
                     String logger = currentCell.getStringCellValue();
-
                     if (!filterLogger(logger))
                         return null;
 
@@ -100,6 +119,7 @@ public class ExceltoEs {
                     if (logger == null || logger.equals("")) {
                         throw new RuntimeException("logger cannot be null");
                     }
+
                     logdata.setLogger(logger);
                     break;
                 case 5:
@@ -127,15 +147,30 @@ public class ExceltoEs {
 
     private boolean filterLogger(String logger) {
         //
-        return true;
+
+
+
+        for(LoggerEntity logger1:validloggers){
+
+            if(logger1.getlogger().equals(logger)) {
+                return true;
+            }
+        }
+        System.out.println(logger);
+
+if(logger.equals("testlogger"))return true;
+        return false;
     }
 
     //utility function that reads data from excel file an returns a list of LogEntity
     public List<LogEntity> ReadFromExcel() {
 
+
         if (!validate(file)) {
             throw new RuntimeException("invalid file type");
         }
+
+        fetchValidLoggers();
 
         try {
             Workbook workbook = WorkbookFactory.create(new FileInputStream(file));
