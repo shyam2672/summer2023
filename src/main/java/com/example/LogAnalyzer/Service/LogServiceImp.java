@@ -4,7 +4,6 @@ import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Helper.ExceltoEs;
 import com.example.LogAnalyzer.Helper.QueryPrinter;
 import com.example.LogAnalyzer.Repository.LogRepository;
-import com.example.LogAnalyzer.Repository.LoggerRepository;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
@@ -39,10 +38,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Service
 public class LogServiceImp implements LogService {
 
+    private static final Logger logger=Logger.getLogger(LogServiceImp.class.getName());
 
     private RestHighLevelClient client;
     private LogRepository logRepository;
@@ -68,6 +70,7 @@ public class LogServiceImp implements LogService {
 
 
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
             throw new RuntimeException(e);
         }
     }
@@ -79,10 +82,8 @@ public class LogServiceImp implements LogService {
         Iterable<LogEntity> logs = logRepository.findAll();
         List<LogEntity> loggs = new ArrayList<>();
         for (LogEntity log : logs) {
-//            System.out.println(log.getID());
             loggs.add(log);
         }
-        System.out.println(loggs.size());
         return loggs;
     }
 
@@ -97,7 +98,6 @@ public class LogServiceImp implements LogService {
         }
         logs.addAll(page.getContent());
         page.nextPageable();
-        System.out.println(logs.size());
         return logs;
 
     }
@@ -121,6 +121,7 @@ public class LogServiceImp implements LogService {
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
             throw new RuntimeException(e);
         }
         scrollId = searchResponse.getScrollId();
@@ -134,7 +135,6 @@ public class LogServiceImp implements LogService {
             for (SearchHit hit : hits) {
                 String id = hit.getId();
                 Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-//                System.out.println(sourceAsMap.toString());
                 tothits++;
                 LogEntity logg = new LogEntity();
 
@@ -146,6 +146,7 @@ public class LogServiceImp implements LogService {
                     tsp = formatter.parse(timestamp);
                     logg.setTimestamp(tsp);
                 } catch (ParseException e) {
+                    logger.log(Level.SEVERE, "An error occurred", e);
                     throw new RuntimeException(e);
                 }
                 logg.setTimestamp(tsp);
@@ -170,6 +171,7 @@ public class LogServiceImp implements LogService {
             try {
                 searchResponse = client.scroll(new SearchScrollRequest(scrollId).scroll(scroll), RequestOptions.DEFAULT);
             } catch (IOException e) {
+                logger.log(Level.SEVERE, "An error occurred", e);
                 throw new RuntimeException(e);
             }
             scrollId = searchResponse.getScrollId();
@@ -192,8 +194,8 @@ public class LogServiceImp implements LogService {
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
-            System.out.println(searchResponse == null);
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
             throw new RuntimeException(e);
         }
         Aggregations aggs = searchResponse.getAggregations();
@@ -229,6 +231,7 @@ public class LogServiceImp implements LogService {
         try {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
             throw new RuntimeException(e);
         }
         Aggregations aggs = searchResponse.getAggregations();
@@ -254,107 +257,6 @@ public class LogServiceImp implements LogService {
 
     }
 
-    //can count cardinality of any field except messsage
-    @Override
-    public Long cardinalityAggs(String field) {
-        AggregationBuilder aggregationBuilder = AggregationBuilders
-                .cardinality("unique_" + field) //agg name
-                .field(field);
-
-        SearchRequest searchRequest = new SearchRequest("loganalyzer");
-        searchRequest.source(new SearchSourceBuilder()
-                .aggregation(aggregationBuilder));
-        QueryPrinter.printQuery(searchRequest, client);
-        SearchResponse searchResponse = null;
-        try {
-            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        Cardinality cardinalityAgg = searchResponse.getAggregations().get("unique_" + field);
-        long cardinality = cardinalityAgg.getValue();
-
-        return cardinality;
-    }
-
-    //ann example og grouby aggregation, tot docs under a source
-    @Override
-    public Map<String, Long> groupBysource() {
-        System.out.println(client);
-        System.out.println(logRepository.findAll());
-        QueryBuilder query = QueryBuilders.matchAllQuery();
-
-        AggregationBuilder aggregation = AggregationBuilders
-                .terms("sources").field("source");
-
-
-        SearchRequest searchRequest = new SearchRequest();
-        searchRequest.indices("loganalyzer");
-        searchRequest.source(new SearchSourceBuilder().query(query).aggregation(aggregation));
-
-        SearchResponse searchResponse;
-        try {
-            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        Aggregations aggs = searchResponse.getAggregations();
-        Terms sourceaggs = aggs.get("sources");
-
-        List<? extends Terms.Bucket> sourceBuckets = sourceaggs.getBuckets();
-        Map<String, Long> mp = new HashMap<>();
-        for (Terms.Bucket sourceBucket : sourceBuckets) {
-            mp.put(sourceBucket.getKeyAsString(), sourceBucket.getDocCount());
-        }
-        return mp;
-    }
-
-    // an example of porjection query
-    @Override
-    public List<LogEntity> projectBySourceAndMessage() {
-        QueryBuilder query = QueryBuilders.matchAllQuery();
-
-        SearchSourceBuilder searchSource = new SearchSourceBuilder();
-        searchSource.query(query);
-        searchSource.from(0);
-        searchSource.size(10000);
-
-        String[] includes = {"source", "message"};
-        String[] excludes = null;
-        searchSource.fetchSource(includes, excludes);
-
-        SearchRequest searchRequest = new SearchRequest("loganalyzer");
-        searchRequest.source(searchSource);
-
-        SearchResponse response;
-        try {
-            response = client.search(searchRequest, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-
-        SearchHits hits = response.getHits();
-
-        List<LogEntity> logs = new ArrayList<>();
-        int tothits = 0;
-        for (SearchHit hit : hits) {
-            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-            tothits++;
-            String source = (String) sourceAsMap.get("source");
-            String message = (String) sourceAsMap.get("message");
-            LogEntity logg = new LogEntity();
-            logg.setID(String.valueOf(tothits));
-            logg.setSource(source);
-            logg.setMessage(message);
-            logs.add(logg);
-        }
-
-        return logs;
-    }
 
     //fitler docs in given time range
     @Override
@@ -376,6 +278,7 @@ public class LogServiceImp implements LogService {
         try {
             response = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
             throw new RuntimeException(e);
         }
 
@@ -387,7 +290,6 @@ public class LogServiceImp implements LogService {
         for (SearchHit hit : hits) {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
             String id = hit.getId();
-            System.out.println(id);
             LogEntity logg = new LogEntity();
             String timestamp = sourceAsMap.get("timestamp").toString();
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -397,7 +299,7 @@ public class LogServiceImp implements LogService {
                 tsp = formatter.parse(timestamp);
                 logg.setTimestamp(tsp);
             } catch (Exception e) {
-                System.out.println(e);
+                logger.log(Level.SEVERE, "An error occurred", e);
             }
 
             LocalDate dt = LocalDate.parse(sourceAsMap.get("date").toString());
@@ -439,13 +341,13 @@ public class LogServiceImp implements LogService {
         try {
             response = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
             throw new RuntimeException(e);
         }
         SearchHits hits = response.getHits();
         List<LogEntity> logs = new ArrayList<>();
         for (SearchHit hit : hits) {
             Map<String, Object> sourceAsMap = hit.getSourceAsMap();
-            System.out.println(sourceAsMap.toString());
             String id = hit.getId();
             LogEntity logg = new LogEntity();
             String timestamp = sourceAsMap.get("timestamp").toString();
@@ -456,6 +358,7 @@ public class LogServiceImp implements LogService {
                 tsp = formatter.parse(timestamp);
                 logg.setTimestamp(tsp);
             } catch (Exception e) {
+                logger.log(Level.SEVERE, "An error occurred", e);
                 throw new RuntimeException(e);
             }
 
@@ -477,10 +380,7 @@ public class LogServiceImp implements LogService {
     @Override
     public List<LogEntity> filterByTermsDynamic(String field, String... terms) throws ParseException {
 
-        if (!field.equals("id") && !field.equals("timestamp") && !field.equals("source") && !field.equals("message")) {
-            throw new RuntimeException("invalid field name");
-        }
-        for (String s : terms) System.out.println(s);
+
         TermsQueryBuilder termsQuery = QueryBuilders.termsQuery(field, terms);
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder()
                 .query(termsQuery);
@@ -496,6 +396,7 @@ public class LogServiceImp implements LogService {
         try {
             response = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
             throw new RuntimeException(e);
         }
 
@@ -514,6 +415,7 @@ public class LogServiceImp implements LogService {
                 tsp = formatter.parse(timestamp);
                 logg.setTimestamp(tsp);
             } catch (Exception e) {
+                logger.log(Level.SEVERE, "An error occurred", e);
                 throw e;
             }
             LocalDate dt = LocalDate.parse(sourceAsMap.get("date").toString());
@@ -554,6 +456,7 @@ public class LogServiceImp implements LogService {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
             throw new RuntimeException(e);
         }
 
@@ -565,7 +468,6 @@ public class LogServiceImp implements LogService {
         for (Terms.Bucket sourceBucket : sourceBuckets) {
             tot += sourceBucket.getDocCount();
             mp.put(sourceBucket.getKeyAsString(), sourceBucket.getDocCount());
-            System.out.println(sourceBucket.getKeyAsString());
         }
         return mp;
     }
@@ -591,6 +493,7 @@ public class LogServiceImp implements LogService {
         try {
             response = client.search(searchRequest, RequestOptions.DEFAULT);
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
             throw new RuntimeException(e);
         }
 
@@ -628,6 +531,7 @@ public class LogServiceImp implements LogService {
             searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
 
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
             throw new RuntimeException(e);
         }
         Aggregations aggs = searchResponse.getAggregations();
@@ -643,16 +547,117 @@ public class LogServiceImp implements LogService {
             for (Terms.Bucket field2bucket : field2aggs.getBuckets()) {
                 Map<String,Long> mp1=new HashMap<>();
                 mp1.put(field2bucket.getKeyAsString(), field2bucket.getDocCount());
-                System.out.println(field2bucket.getKeyAsString());
-                System.out.println(mp1.toString());
-             mp.get(source).add(mp1);
-                System.out.println(mp.toString());
+                mp.get(source).add(mp1);
             }
 
         }
-        System.out.println(mp.toString());
         return mp;
     }
+
+    //can count cardinality of any field except messsage
+    @Override
+    public Long cardinalityAggs(String field) {
+        AggregationBuilder aggregationBuilder = AggregationBuilders
+                .cardinality("unique_" + field) //agg name
+                .field(field);
+
+        SearchRequest searchRequest = new SearchRequest("loganalyzer");
+        searchRequest.source(new SearchSourceBuilder()
+                .aggregation(aggregationBuilder));
+        QueryPrinter.printQuery(searchRequest, client);
+        SearchResponse searchResponse = null;
+        try {
+            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
+            throw new RuntimeException(e);
+        }
+
+        Cardinality cardinalityAgg = searchResponse.getAggregations().get("unique_" + field);
+        long cardinality = cardinalityAgg.getValue();
+
+        return cardinality;
+    }
+
+    //ann example og grouby aggregation, tot docs under a source
+    @Override
+    public Map<String, Long> groupBysource() {
+        System.out.println(logRepository.findAll());
+        QueryBuilder query = QueryBuilders.matchAllQuery();
+
+        AggregationBuilder aggregation = AggregationBuilders
+                .terms("sources").field("source");
+
+
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("loganalyzer");
+        searchRequest.source(new SearchSourceBuilder().query(query).aggregation(aggregation));
+
+        SearchResponse searchResponse;
+        try {
+            searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
+            throw new RuntimeException(e);
+        }
+
+        Aggregations aggs = searchResponse.getAggregations();
+        Terms sourceaggs = aggs.get("sources");
+
+        List<? extends Terms.Bucket> sourceBuckets = sourceaggs.getBuckets();
+        Map<String, Long> mp = new HashMap<>();
+        for (Terms.Bucket sourceBucket : sourceBuckets) {
+            mp.put(sourceBucket.getKeyAsString(), sourceBucket.getDocCount());
+        }
+        return mp;
+    }
+
+    // an example of porjection query
+    @Override
+    public List<LogEntity> projectBySourceAndMessage() {
+        QueryBuilder query = QueryBuilders.matchAllQuery();
+
+        SearchSourceBuilder searchSource = new SearchSourceBuilder();
+        searchSource.query(query);
+        searchSource.from(0);
+        searchSource.size(10000);
+
+        String[] includes = {"source", "message"};
+        String[] excludes = null;
+        searchSource.fetchSource(includes, excludes);
+
+        SearchRequest searchRequest = new SearchRequest("loganalyzer");
+        searchRequest.source(searchSource);
+
+        SearchResponse response;
+        try {
+            response = client.search(searchRequest, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
+            throw new RuntimeException(e);
+        }
+
+
+        SearchHits hits = response.getHits();
+
+        List<LogEntity> logs = new ArrayList<>();
+        int tothits = 0;
+        for (SearchHit hit : hits) {
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            tothits++;
+            String source = (String) sourceAsMap.get("source");
+            String message = (String) sourceAsMap.get("message");
+            LogEntity logg = new LogEntity();
+            logg.setID(String.valueOf(tothits));
+            logg.setSource(source);
+            logg.setMessage(message);
+            logs.add(logg);
+        }
+
+        return logs;
+    }
+
 
 
 }

@@ -4,6 +4,7 @@ import com.example.LogAnalyzer.Entity.LogEntity;
 import com.example.LogAnalyzer.Entity.LoggerEntity;
 import com.example.LogAnalyzer.Repository.LogRepository;
 import com.example.LogAnalyzer.Repository.LoggerRepository;
+import com.example.LogAnalyzer.Service.LogServiceImp;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,15 +17,15 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 //helper class to read data from excel file and write it on es
 @Component
 public class ExceltoEs {
-//
-//    @Autowired
-//    private loggerRepository validlogger;
+
+private static final Logger logger=Logger.getLogger(LogServiceImp.class.getName());
 
 
     @Autowired
@@ -73,6 +74,8 @@ public class ExceltoEs {
                         tsp = formatter.parse(timestamp);
                         logdata.setTimestamp(tsp);
                     } catch (ParseException e) {
+                        logger.log(Level.SEVERE, "An error occurred", e);
+
                         throw new RuntimeException(e);
                     }
 
@@ -95,6 +98,7 @@ public class ExceltoEs {
                     String message = currentCell.getStringCellValue();
                     //message  cannot be null
                     if (message == null || message.equals("")) {
+
                         throw new RuntimeException("message cannot be null");
                     }
                     logdata.setMessage(message);
@@ -156,7 +160,6 @@ public class ExceltoEs {
                 return true;
             }
         }
-        System.out.println(logger);
 
 if(logger.equals("testlogger"))return true;
         return false;
@@ -166,7 +169,11 @@ if(logger.equals("testlogger"))return true;
     public List<LogEntity> ReadFromExcel() {
 
 
+
+
         if (!validate(file)) {
+            logger.info("invalid file type");
+
             throw new RuntimeException("invalid file type");
         }
 
@@ -202,6 +209,7 @@ if(logger.equals("testlogger"))return true;
 
             return logs;
         } catch (IOException e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
 
             throw new RuntimeException(e);
         }
@@ -218,6 +226,8 @@ if(logger.equals("testlogger"))return true;
         try {
             return Logs;
         } catch (Exception e) {
+            logger.log(Level.SEVERE, "An error occurred", e);
+
             throw new RuntimeException(e);
         }
 
