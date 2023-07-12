@@ -222,7 +222,7 @@ class RequestHandlerTest {
         innerList.add(innerMap);
         nestedMap.put("key1", innerList);
 
-        when(logService.netedGroupByDynamic(anyString(), anyString())).thenReturn(nestedMap);
+        when(logService.nestedGroupByDynamic(anyString(), anyString())).thenReturn(nestedMap);
 
 
         Map<String, Object> requestBody = new HashMap<>();

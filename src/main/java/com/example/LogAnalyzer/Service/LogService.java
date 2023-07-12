@@ -29,15 +29,16 @@ public interface LogService {
     List<LogEntity> searchUsingScroll();
 
 
-   Map<String, Long> tabularAggregation();
+    Map<String, Long> tabularAggregation();
+
     Map<String, Long> nestedAggregation();
 
     Long cardinalityAggs(String field);
 
-    List<LogEntity> filterByTermsDynamic(String field, String ...terms) throws ParseException;
+    List<LogEntity> filterByTermsDynamic(String field, String... terms) throws ParseException;
 
     List<Map<String, Object>> projectByDynamic(String... fields);
 
-    Map<String, List<Map<String, Long>>> netedGroupByDynamic(String field, String field2);
+    Map<String, List<Map<String, Long>>> nestedGroupByDynamic(String field, String field2);
 
 }

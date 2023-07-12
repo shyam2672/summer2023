@@ -9,7 +9,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 public class QueryPrinter {
 
 
-    public static String printQuery(SearchRequest searchRequest,RestHighLevelClient client) {
+    public static String printQuery(SearchRequest searchRequest, RestHighLevelClient client) {
 
 
         ActionListener<SearchResponse> listener = new ActionListener<SearchResponse>() {

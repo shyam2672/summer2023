@@ -302,7 +302,6 @@ class LogServiceImpTest {
 
 
         Date ts = logs.get(0).getTimestamp();
-        System.out.println(ts);
         Instant instant = ts.toInstant();
 
         // Convert Instant to LocalDateTime
@@ -892,7 +891,7 @@ class LogServiceImpTest {
 
 
         // call methodunder test
-        Map<String, List<Map<String, Long>>> result = logService.netedGroupByDynamic("field1","field2");
+        Map<String, List<Map<String, Long>>> result = logService.nestedGroupByDynamic("field1", "field2");
 //
 
         //verify
@@ -908,8 +907,6 @@ class LogServiceImpTest {
         assertEquals(2, result.size());
 
     }
-
-
 
 
 }

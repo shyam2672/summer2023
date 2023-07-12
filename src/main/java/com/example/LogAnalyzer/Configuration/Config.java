@@ -18,10 +18,6 @@ public class Config  {
         );
     }
 
-//    @Bean
-//    public loggerRepository loggerRepository() {
-//        return new loggerRepository();
-//    }
 
 
 

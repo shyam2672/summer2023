@@ -92,7 +92,7 @@ public class LogController {
 
     @GetMapping("/nestedGroupBy")
     public Map<String, List<Map<String, Long>>> nestedGroupBy(@RequestParam("field1Value") String field1, @RequestParam("field2Value") String field2) {
-        Map<String, List<Map<String, Long>>> groupedData = service.netedGroupByDynamic(field1, field2);
+        Map<String, List<Map<String, Long>>> groupedData = service.nestedGroupByDynamic(field1, field2);
         return groupedData;
     }
 

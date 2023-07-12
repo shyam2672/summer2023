@@ -5,7 +5,6 @@ import com.example.LogAnalyzer.Controller.LogControllerTest;
 import com.example.LogAnalyzer.Entity.LogEntityTest;
 import com.example.LogAnalyzer.Helper.ExceltoEsTest;
 import com.example.LogAnalyzer.Helper.QueryPrinterTest;
-import com.example.LogAnalyzer.Service.LogServiceImp;
 import com.example.LogAnalyzer.Service.LogServiceImpTest;
 import org.junit.platform.suite.api.SelectClasses;
 import org.junit.platform.suite.api.Suite;

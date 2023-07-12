@@ -25,7 +25,7 @@ public class ExceltoEsTest {
 
     //    @Autowired
     @InjectMocks
-    private ExceltoEs helper ;
+    private ExceltoEs helper;
 
     @Mock
     private LogRepository logRepository;
@@ -36,8 +36,8 @@ public class ExceltoEsTest {
 
     @Test
     public void ReadTest() {
-        List<LoggerEntity> loggers=new ArrayList<>();
-        LoggerEntity logger=new LoggerEntity();
+        List<LoggerEntity> loggers = new ArrayList<>();
+        LoggerEntity logger = new LoggerEntity();
         logger.setId("id");
         logger.setlogger("com.spr.core.monitoring.impl.logger.AbstractMonitoringLogger");
         loggers.add(logger);
@@ -52,14 +52,14 @@ public class ExceltoEsTest {
 
 
     @Test
-    public void testFetchValidLoggers(){
-         List<String> loggers=new ArrayList<>();
-         loggers.add("logger1");
+    public void testFetchValidLoggers() {
+        List<String> loggers = new ArrayList<>();
+        loggers.add("logger1");
         doAnswer(invocation -> {
             return loggers;
         }).when(loggerRepository).findAll();
         helper.fetchValidLoggers();
-        assertEquals(helper.validloggers,loggers);
+        assertEquals(helper.validloggers, loggers);
     }
 
 

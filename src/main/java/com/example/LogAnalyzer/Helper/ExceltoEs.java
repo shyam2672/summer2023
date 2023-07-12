@@ -25,14 +25,11 @@ import java.util.logging.Logger;
 @Component
 public class ExceltoEs {
 
-private static final Logger logger=Logger.getLogger(LogServiceImp.class.getName());
+    private static final Logger logger = Logger.getLogger(LogServiceImp.class.getName());
 
 
     @Autowired
     private LoggerRepository loggerRepository;
-
-
-
 
 
     List<LoggerEntity> validloggers;
@@ -46,8 +43,8 @@ private static final Logger logger=Logger.getLogger(LogServiceImp.class.getName(
         return extension.equalsIgnoreCase("xlsx") || extension.equalsIgnoreCase("xls");
     }
 
-    public void fetchValidLoggers(){
-        validloggers=loggerRepository.findAll();
+    public void fetchValidLoggers() {
+        validloggers = loggerRepository.findAll();
     }
 
     //returns an entity if row is valid
@@ -153,22 +150,19 @@ private static final Logger logger=Logger.getLogger(LogServiceImp.class.getName(
         //
 
 
+        for (LoggerEntity logger1 : validloggers) {
 
-        for(LoggerEntity logger1:validloggers){
-
-            if(logger1.getlogger().equals(logger)) {
+            if (logger1.getlogger().equals(logger)) {
                 return true;
             }
         }
 
-if(logger.equals("testlogger"))return true;
+        if (logger.equals("testlogger")) return true;
         return false;
     }
 
     //utility function that reads data from excel file an returns a list of LogEntity
     public List<LogEntity> ReadFromExcel() {
-
-
 
 
         if (!validate(file)) {

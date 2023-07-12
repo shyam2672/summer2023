@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface LoggerRepository extends MongoRepository<LoggerEntity,String> {
+public interface LoggerRepository extends MongoRepository<LoggerEntity, String> {
 
 }

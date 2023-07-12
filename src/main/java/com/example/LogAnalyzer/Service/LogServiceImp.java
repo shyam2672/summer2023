@@ -44,7 +44,7 @@ import java.util.logging.Logger;
 @Service
 public class LogServiceImp implements LogService {
 
-    private static final Logger logger=Logger.getLogger(LogServiceImp.class.getName());
+    private static final Logger logger = Logger.getLogger(LogServiceImp.class.getName());
 
     private RestHighLevelClient client;
     private LogRepository logRepository;
@@ -516,7 +516,7 @@ public class LogServiceImp implements LogService {
     }
 
     @Override
-    public Map<String, List<Map<String, Long>>> netedGroupByDynamic(String field1, String field2) {
+    public Map<String, List<Map<String, Long>>> nestedGroupByDynamic(String field1, String field2) {
 
         QueryBuilder query = QueryBuilders.matchAllQuery();
         AggregationBuilder aggregation = AggregationBuilders
@@ -538,14 +538,14 @@ public class LogServiceImp implements LogService {
         Terms field1aggs = aggs.get("field1");
 
         List<? extends Terms.Bucket> sourceBuckets = field1aggs.getBuckets();
-        Map<String,List<Map<String,Long>>> mp = new HashMap<>();
+        Map<String, List<Map<String, Long>>> mp = new HashMap<>();
         for (Terms.Bucket sourcebucket : sourceBuckets) {
             String source = sourcebucket.getKeyAsString();
-            mp.put(source,new ArrayList<>());
-            Terms field2aggs=sourcebucket.getAggregations().get("field2");
+            mp.put(source, new ArrayList<>());
+            Terms field2aggs = sourcebucket.getAggregations().get("field2");
 
             for (Terms.Bucket field2bucket : field2aggs.getBuckets()) {
-                Map<String,Long> mp1=new HashMap<>();
+                Map<String, Long> mp1 = new HashMap<>();
                 mp1.put(field2bucket.getKeyAsString(), field2bucket.getDocCount());
                 mp.get(source).add(mp1);
             }
@@ -657,7 +657,6 @@ public class LogServiceImp implements LogService {
 
         return logs;
     }
-
 
 
 }
