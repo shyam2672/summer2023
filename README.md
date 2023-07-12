@@ -2,7 +2,7 @@
 # Log Analyzing Service
 
 
-This application offers two primary services: log data ingestion and reporting on the ingested data. The data is stored in ElasticSearch using Spring Boot JPA, which facilitates the storage and retrieval of relational data. Multiple services are provided to enable users to query the stored data, including features such as cardinality, groupBy, projection, filter, tabular, and nested aggregation. Hence allowing users to retrieve data in a highly customizable and dynamic manner.
+This application offers two primary services: efficient log data ingestion and reporting on the ingested data. The data is stored in ElasticSearch using Spring Boot JPA, which facilitates the storage and retrieval of relational data. Multiple services are provided to enable users to query the stored data, including features such as cardinality, groupBy, projection, filter, tabular, and nested aggregation. Hence allowing users to retrieve data in a highly customizable and dynamic manner.
 
 Application can generate reports with the queried data in a tabular format, which is highly intuitive and accessible to users. 
 
@@ -74,6 +74,40 @@ Overall, this application is a  data processing and reporting tool to provide us
 | RequestBody | Type     | Description                       |
 | :-------- | :------- | :-------------------------------- |
 | `terms`      | `array of strings` | **Required**.  requires field names|
+
+#### Get nested groupBy results
+
+```
+  POST /api/log/nestedGroupBy
+```
+
+| Parameter | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `field1Value`      | `string` | **Required**.  the name of the outer field|
+| `field2Value`      | `string` | **Required**.  the name of the inner field|
+
+#### Get all data 
+#### api has feature for search using paging as well as scroll to fetch data efficiently from ElasticSearch database
+
+```
+  POST /api
+```
+| RequestBody | Type     | Description                       |
+| :-------- | :------- | :-------------------------------- |
+| `query`      | `String` | **Required**.  type of query to be carried out|
+
+there can be other fields based on the type of query
+##### valid query types and various other fields associated with them
+1. query="search" gets all results
+2. query="search_paging" uses paging technique for search
+3. query="scroll" uses scroll for search
+4. query="groupBy" other fields: field ,groupBys on the requested field
+5. query="projectBy" other fields: an arrays of field names to project
+6. query="nestedGroupBy" other fields: field1 and field2
+7. query="timeFilter" other fields: starttime and endtime
+8. query="termsFilter" other fields: a field and an array of terms
+9. query="cardinality" other fields: field name
+
 
 ## Other Features
 
@@ -201,6 +235,10 @@ Spring Boot, Java, ElasticSearch, Thymeleaf, Junit, MockMvc
 
 #### source code directory structure
 <img width="431" alt="Screenshot 2023-07-07 at 2 35 57 PM" src="https://github.com/shyam2672/summer2023/assets/91652089/c08ae918-928d-4b8d-ab0d-beab68b85f84">
+
+#### Activity Diagram
+![Blank diagram (2)](https://github.com/shyam2672/summer2023/assets/91652089/8610dec3-656b-4fe8-8713-360735e95e66)
+
 
 #### Document Structure
   <img width="613" alt="image" src="https://github.com/shyam2672/summer2023/assets/91652089/e03884df-0580-479e-8913-9fd2f988b17f">
