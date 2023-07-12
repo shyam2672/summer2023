@@ -208,5 +208,8 @@ Spring Boot, Java, ElasticSearch, Thymeleaf, Junit, MockMvc
   
 #### Index Mapping
 <img width="512" alt="image" src="https://github.com/shyam2672/summer2023/assets/91652089/bfba700a-f827-471f-945c-e62f9f5e4d75">
-  
+
+
+  ![main](https://github.com/shyam2672/summer2023/assets/91652089/8acdc0c9-35d6-44cc-bec3-6fb3cb63f7d5)
+
 
