@@ -139,8 +139,8 @@ public class ExceltoEs {
         }
 
         //some fileds are not present
-        if (cellIdx < 3) {
-            throw new RuntimeException("insufficient data expected 3 cells ");
+        if (cellIdx < 5) {
+            throw new RuntimeException("insufficient data, expected 6 cells ");
         }
 
         return logdata;
