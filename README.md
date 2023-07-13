@@ -183,6 +183,31 @@ Spring Boot, Java, ElasticSearch, Thymeleaf, Junit, MockMvc
 
 - Few other things: Intellij debugger, gradle, java web services,SOLID design principles, java memory management, read java head first book.
 
+## Use case Diagram
+<img width="1322" alt="Screenshot 2023-07-12 at 7 23 26 PM" src="https://github.com/shyam2672/summer2023/assets/91652089/46c18f1f-1d0c-4dc8-af98-905effdf0f04">
+
+
+## Usability
+Efficient Data ingestion. The project provides various validation on the data field and also filters the data based on certain fields such as Logger and the Log Level.
+
+As the main goal of the project was to fetch data efficiently and then generate reports on the fetched data. The project has exposed APIs which supports data fetching through all the basic and intuitive techniques such as groupBys, projection, Time and terms filtering, and other complex aggregations.
+
+- Advantages of our Application over Kibana
+
+1. Kibana does not provide any validation and filter over data before ingesting
+
+2. We can write custom queries based on our use case to generate reports. For example on a particular date how many exceptions are caused for a particular logger.
+
+3. We can fetch data from by hitting endpoints of this application and view it in any form
+     as the client desires.
+
+4. The application itself provides reports in form of tables in some search cases.
+
+5. Client does not have to think and write query himself in the Kibana console to fetch data
+
+
+
+
 ## Screen Shots
 
 #### Search results
