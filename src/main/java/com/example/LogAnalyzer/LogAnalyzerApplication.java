@@ -1,5 +1,6 @@
 package com.example.LogAnalyzer;
 
+import com.example.LogAnalyzer.Service.LogService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
@@ -15,8 +16,8 @@ public class LogAnalyzerApplication {
         ApplicationContext context = SpringApplication.run(LogAnalyzerApplication.class, args);
 
 
-//        LogService obj = context.getBean(LogService.class);
-
+        LogService obj = context.getBean(LogService.class);
+//obj.savelogdata();
 
     }
 
